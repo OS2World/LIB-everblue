@@ -1,0 +1,84 @@
+; Default icon
+
+ICON 0x2000 "rc/everblue.ico" 
+
+; Pointers
+
+POINTER 0x1000  DISCARDABLE     "rc/cursor00.ptr" //            X_cursor
+POINTER 0x1002  DISCARDABLE     "rc/cursor02.ptr" //               arrow
+POINTER 0x1004  DISCARDABLE     "rc/cursor04.ptr" //    based_arrow_down
+POINTER 0x1006  DISCARDABLE     "rc/cursor06.ptr" //      based_arrow_up
+POINTER 0x1008  DISCARDABLE     "rc/cursor08.ptr" //                boat
+POINTER 0x100a  DISCARDABLE     "rc/cursor0a.ptr" //            bogosity
+POINTER 0x100c  DISCARDABLE     "rc/cursor0c.ptr" //  bottom_left_corner
+POINTER 0x100e  DISCARDABLE     "rc/cursor0e.ptr" // bottom_right_corner
+POINTER 0x1010  DISCARDABLE     "rc/cursor10.ptr" //         bottom_side
+POINTER 0x1012  DISCARDABLE     "rc/cursor12.ptr" //          bottom_tee
+POINTER 0x1014  DISCARDABLE     "rc/cursor14.ptr" //          box_spiral
+POINTER 0x1016  DISCARDABLE     "rc/cursor16.ptr" //          center_ptr
+POINTER 0x1018  DISCARDABLE     "rc/cursor18.ptr" //              circle
+POINTER 0x101a  DISCARDABLE     "rc/cursor1a.ptr" //               clock
+POINTER 0x101c  DISCARDABLE     "rc/cursor1c.ptr" //          coffee_mug
+POINTER 0x101e  DISCARDABLE     "rc/cursor1e.ptr" //               cross
+POINTER 0x1020  DISCARDABLE     "rc/cursor20.ptr" //       cross_reverse
+POINTER 0x1022  DISCARDABLE     "rc/cursor22.ptr" //           crosshair
+POINTER 0x1024  DISCARDABLE     "rc/cursor24.ptr" //       diamond_cross
+POINTER 0x1026  DISCARDABLE     "rc/cursor26.ptr" //                 dot
+POINTER 0x1028  DISCARDABLE     "rc/cursor28.ptr" //              dotbox
+POINTER 0x102a  DISCARDABLE     "rc/cursor2a.ptr" //        double_arrow
+POINTER 0x102c  DISCARDABLE     "rc/cursor2c.ptr" //         draft_large
+POINTER 0x102e  DISCARDABLE     "rc/cursor2e.ptr" //         draft_small
+POINTER 0x1030  DISCARDABLE     "rc/cursor30.ptr" //          draped_box
+POINTER 0x1032  DISCARDABLE     "rc/cursor32.ptr" //            exchange
+POINTER 0x1034  DISCARDABLE     "rc/cursor34.ptr" //               fleur
+POINTER 0x1036  DISCARDABLE     "rc/cursor36.ptr" //             gobbler
+POINTER 0x1038  DISCARDABLE     "rc/cursor38.ptr" //               gumby
+POINTER 0x103a  DISCARDABLE     "rc/cursor3a.ptr" //               hand1
+POINTER 0x103c  DISCARDABLE     "rc/cursor3c.ptr" //               hand2
+POINTER 0x103e  DISCARDABLE     "rc/cursor3e.ptr" //               heart
+POINTER 0x1040  DISCARDABLE     "rc/cursor40.ptr" //               xicon
+POINTER 0x1042  DISCARDABLE     "rc/cursor42.ptr" //          iron_cross
+POINTER 0x1044  DISCARDABLE     "rc/cursor44.ptr" //            left_ptr
+POINTER 0x1046  DISCARDABLE     "rc/cursor46.ptr" //           left_side
+POINTER 0x1048  DISCARDABLE     "rc/cursor48.ptr" //            left_tee
+POINTER 0x104a  DISCARDABLE     "rc/cursor4a.ptr" //          leftbutton
+POINTER 0x104c  DISCARDABLE     "rc/cursor4c.ptr" //            ll_angle
+POINTER 0x104e  DISCARDABLE     "rc/cursor4e.ptr" //            lr_angle
+POINTER 0x1050  DISCARDABLE     "rc/cursor50.ptr" //                 man
+POINTER 0x1052  DISCARDABLE     "rc/cursor52.ptr" //        middlebutton
+POINTER 0x1054  DISCARDABLE     "rc/cursor54.ptr" //               mouse
+POINTER 0x1056  DISCARDABLE     "rc/cursor56.ptr" //              pencil
+POINTER 0x1058  DISCARDABLE     "rc/cursor58.ptr" //              pirate
+POINTER 0x105a  DISCARDABLE     "rc/cursor5a.ptr" //                plus
+POINTER 0x105c  DISCARDABLE     "rc/cursor5c.ptr" //      question_arrow
+POINTER 0x105e  DISCARDABLE     "rc/cursor5e.ptr" //           right_ptr
+POINTER 0x1060  DISCARDABLE     "rc/cursor60.ptr" //          right_side
+POINTER 0x1062  DISCARDABLE     "rc/cursor62.ptr" //           right_tee
+POINTER 0x1064  DISCARDABLE     "rc/cursor64.ptr" //         rightbutton
+POINTER 0x1066  DISCARDABLE     "rc/cursor66.ptr" //            rtl_logo
+POINTER 0x1068  DISCARDABLE     "rc/cursor68.ptr" //            sailboat
+POINTER 0x106a  DISCARDABLE     "rc/cursor6a.ptr" //       sb_down_arrow
+POINTER 0x106c  DISCARDABLE     "rc/cursor6c.ptr" //   sb_h_double_arrow
+POINTER 0x106e  DISCARDABLE     "rc/cursor6e.ptr" //       sb_left_arrow
+POINTER 0x1070  DISCARDABLE     "rc/cursor70.ptr" //      sb_right_arrow
+POINTER 0x1072  DISCARDABLE     "rc/cursor72.ptr" //         sb_up_arrow
+POINTER 0x1074  DISCARDABLE     "rc/cursor74.ptr" //   sb_v_double_arrow
+POINTER 0x1076  DISCARDABLE     "rc/cursor76.ptr" //             shuttle
+POINTER 0x1078  DISCARDABLE     "rc/cursor78.ptr" //              sizing
+POINTER 0x107a  DISCARDABLE     "rc/cursor7a.ptr" //              spider
+POINTER 0x107c  DISCARDABLE     "rc/cursor7c.ptr" //            spraycan
+POINTER 0x107e  DISCARDABLE     "rc/cursor7e.ptr" //                star
+POINTER 0x1080  DISCARDABLE     "rc/cursor80.ptr" //              target
+POINTER 0x1082  DISCARDABLE     "rc/cursor82.ptr" //              tcross
+POINTER 0x1084  DISCARDABLE     "rc/cursor84.ptr" //      top_left_arrow
+POINTER 0x1086  DISCARDABLE     "rc/cursor86.ptr" //     top_left_corner
+POINTER 0x1088  DISCARDABLE     "rc/cursor88.ptr" //    top_right_corner
+POINTER 0x108a  DISCARDABLE     "rc/cursor8a.ptr" //            top_side
+POINTER 0x108c  DISCARDABLE     "rc/cursor8c.ptr" //             top_tee
+POINTER 0x108e  DISCARDABLE     "rc/cursor8e.ptr" //                trek
+POINTER 0x1090  DISCARDABLE     "rc/cursor90.ptr" //            ul_angle
+POINTER 0x1092  DISCARDABLE     "rc/cursor92.ptr" //            umbrella
+POINTER 0x1094  DISCARDABLE     "rc/cursor94.ptr" //            ur_angle
+POINTER 0x1096  DISCARDABLE     "rc/cursor96.ptr" //               watch
+POINTER 0x1098  DISCARDABLE     "rc/cursor98.ptr" //               xterm
+

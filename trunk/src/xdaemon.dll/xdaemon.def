@@ -1,0 +1,80 @@
+LIBRARY XDAEMON INITINSTANCE TERMINSTANCE
+DESCRIPTION "Everblue Daemon Access - OS/2 Netlabs Project"
+CODE	
+	PRELOAD
+DATA	
+	SINGLE SHARED
+STACKSIZE 1310720
+EXPORTS
+; library functions
+; heap functions
+	smalloc
+	srealloc
+	scalloc
+	sfree
+; daemon functions
+	Daemon_register
+	Daemon_xinitialized
+	Daemon_shutdown
+	Daemon_getProcess
+	_Daemon_copyEvent
+	_Daemon_doEvent
+	_Daemon_propagateEvent
+	_Daemon_recurseEvent
+	Daemon_addEvent
+	Daemon_createEvent
+	Daemon_removeEvent
+	Daemon_SendEvent
+	Daemon_RootWindow
+	Daemon_exec
+	Daemon_getPMHandle
+	Daemon_Thread_Close
+	Daemon_died
+	Daemon_doTasks
+	Daemon_addEventMask
+	Daemon_freeEventMask
+	Daemon_findEventMask
+	Daemon_orEventMasks
+	Daemon_freeEventQueue
+; hook functions
+	_hook_newGrab
+	_hook_removeGrab
+	_hook_removeGrabAny
+	_hook_findGrab
+	_hook_inputQueueHook
+	_hook_XInternAtom
+	_hook_getAtomName
+; resource functions
+	createResource
+	getResource
+	addResource
+	monitorResource
+	unMonitorResource
+	freeResource
+	unChainResource
+; window functions
+	removeWindow
+	getWindow
+	getPosition
+	getParent
+; drawable functions
+	getDrawableHeight
+	getDrawableGeometry
+	getCachedHPS
+	freeOldHPS
+	_stdgcvalues
+; other functions
+	_Daemon_getatomname
+	_Daemon_xinternatom
+	_Daemon_purgegc
+	_auto_repeat
+	_Xlib_State
+	__XQueryPointer
+	_Xlib_FreeAllAtoms
+	_Xlib_UnmonitorResource
+	_Xlib_set_data
+	_Xlib_get_data
+	_XDeleteProperty
+	XGetWindowAttributes2
+	Daemon_getwinattrib
+	_XGetWindowProperty
