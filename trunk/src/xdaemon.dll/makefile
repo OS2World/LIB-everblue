@@ -43,14 +43,14 @@ XDLL_SRC=\
 	GC.c Drawable.c \
 	WindowTools.c WindowHash.c EventMask.c Thread.c \
 	stubs.c register.c HeapShared.c InitTerm.c \
-	Window.c EventQueue.c Grab.c libcfix.c Resource.c \
+	Window.c EventQueue.c Grab.c Resource.c \
 	message.c
 
 XDLL_OBJ=\
 	GC$(EXT) Drawable$(EXT) \
 	WindowTools$(EXT) WindowHash$(EXT) EventMask$(EXT) Thread$(EXT) \
 	stubs$(EXT) register$(EXT) HeapShared$(EXT) InitTerm$(EXT) \
-	Window$(EXT) EventQueue$(EXT) Grab$(EXT) libcfix$(EXT) Resource$(EXT) \
+	Window$(EXT) EventQueue$(EXT) Grab$(EXT) Resource$(EXT) \
 	message$(EXT)
 
 ##################################################################
