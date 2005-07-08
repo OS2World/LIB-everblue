@@ -3,7 +3,7 @@
 #include	"Xom/Xlcint.h"
 #include "Xmisc/Xresinternal.h"
 #include "Xmisc/Xresource.h"
-#include 	"../XrmI.h"
+#include 	"XrmI.h"
 
 #include	<X11/Xos.h>
 

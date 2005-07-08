@@ -16,8 +16,8 @@ int XNextEvent(Display *display, XEvent *event)
 {
 	DBUG_ENTER("XNextEvent")
 	EB_Process *ebproc = getResource(EBPROCESS, (XID)process);
-	int rc;
-	XEvent *ev;
+//	int rc;
+//	XEvent *ev;
 
 	while(!display->qlen)
 		XNoOp(display);
