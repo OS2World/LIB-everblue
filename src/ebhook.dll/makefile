@@ -19,14 +19,14 @@ EXT=.o
 
 XDEFS=-DXKB
 CDEFS=-DOS2I18N -DX_LOCALE -DGDK_UC_FIX -DFONTDPI=85
-CFLAGS=-Zomf -O3 -mpentium -Wall $(CDEFS) $(XDEFS)
+CFLAGS=-Zomf -O3 -mpentium -Wall $(CDEFS) $(XDEFS) -Zno-fork
 DLLFLAGS=-nodefaultlibs -Zdll $(CFLAGS) -s
 
 # Uncomment the following lines to build a debug version.
 # Will require ICSDEBUG or SD386 to debug in OMF mode
 
 CDEFS=-DDEBUG -DOS2I18N -DX_LOCALE -DGDK_UC_FIX -DFONTDPI=85
-CFLAGS=-Zomf -O -g -Wall -L/usr/lib $(CDEFS) $(XDEFS)
+CFLAGS=-Zomf -O -g -Wall -L/usr/lib $(CDEFS) $(XDEFS) -Zno-fork
 DLLFLAGS=-nodefaultlibs -Zdll $(CFLAGS)
 
 ##################################################################
