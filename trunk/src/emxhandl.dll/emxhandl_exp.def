@@ -7,3 +7,4 @@ DATA
 STACKSIZE 1310720
 EXPORTS
 	_EMXRegisterHandle = EMXRegisterHandle
+	_EMXFree = EMXFree

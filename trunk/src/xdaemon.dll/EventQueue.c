@@ -1,113 +1,129 @@
 #include "daemondll.h"
 
+XEvent *Daemon_copyEvent(register _XQEvent **newq, _XQEvent *origq);
+
 int serial = 0;
 
-EXPENTRY void Daemon_addEvent(EB_Resource *newq, EB_Resource *procres, Bool copy) {
-	XEvent *ev = newq->xevent;
+EXPENTRY void Daemon_addEvent(_XQEvent *newq, EB_Resource *procres, Bool copy) {
 	EB_Process *process = getResource(EBPROCESS, (XID)procres);
+	register Display *display = process->display;
+	LockDisplay(display);
 
-/*	if(process->display->qlen >= 2048) {
+/*	if(display->qlen >= 2048) {
 		sfree(newq);
 		fprintf(stderr, "Daemon_AddEvent: event pipe overflow!!!\n");
 		return;
 	}*/
 
-	ev->xany.display = process->display;
-	addResourceLast(&process->event_queue, newq);
+	if(copy) {
+		_XQEvent *newqold = newq;
+		Daemon_copyEvent(&newq, newqold);
+	}
 
-	process->display->qlen++;
-	write(process->pipeserver, (char *)&ev, sizeof(void *));
-//printf("Event added (%ld) for %x, %x\n", ev->type, ev->xany.window, newq);
+	newq->event.xany.display = process->display;
+	newq->next = NULL;
+	if(display->tail)
+		display->tail->next = newq;
+	else
+		display->head = newq;
+	display->tail = newq;
+	display->qlen++;
+	XUnlockDisplay(display);
+
+	write(process->pipeserver, (char *)&newq->event, sizeof(void *));
 }
 
-EXPENTRY XEvent *Daemon_createEvent(register EB_Resource **newq, Window w, int type)
+EXPENTRY XEvent *Daemon_createEvent(register _XQEvent **newq, Window w, int type)
 {
-	XEvent *new = smalloc(sizeof(XEvent));
+	*newq = smalloc(sizeof(_XQEvent));
+	XEvent *new = &(*newq)->event;
 
 	new->type = type;
 	new->xany.serial = serial++;
 	new->xany.send_event = False;
 	new->xany.window = w;
-	*newq = createResource(EBEVENT, new);
 	return new;
 }
 
-XEvent *Daemon_copyEvent(register EB_Resource **newq, EB_Resource *origq)
+XEvent *Daemon_copyEvent(register _XQEvent **newq, _XQEvent *origq)
 {
 	XEvent *new;
-	*newq = smalloc(sizeof(EB_Resource));
+	*newq = smalloc(sizeof(_XQEvent));
 
 	if(!*newq)
 	{
 		fprintf(stderr, "EventQueue.c/Daemon_CopyEvent: Error allocating memory\n");
 		return NULL;
 	}
-	new = (*newq)->xevent;
-	memcpy(new, origq->xevent, sizeof(XEvent));
+	new = &(*newq)->event;
+	memcpy(new, &origq->event, sizeof(XEvent));
 	return new;
 }
 
-void Daemon_doEvent(EB_Resource *newq, EB_Resource *event_masks, int mask) {
+void Daemon_doEvent(_XQEvent *newq, EB_Resource *event_masks, int mask) {
 	EB_Resource *current = event_masks;
 	Bool copy = False;
+	Display *first = NULL;
 
 	if(current)
 		while((current = current->next))
 			if(current->event_mask & mask) {
 				EB_Resource *current2 = getResource(EBEVENTMASK1, (XID)current);
+				if(first == NULL) {
+					EB_Process *process = getResource(EBPROCESS, (XID)current2->procres);
+					first = process->display;
+					LockDisplay(first);
+				}
 				Daemon_addEvent(newq, current2->procres, copy);
 				copy = True;
 			}
+	if(first)
+		XUnlockDisplay(first);
 }
 
-void Daemon_propagateEvent(EB_Resource *newq, int mask, BOOL weakMouseEvent)
-{
-#if 0
+void Daemon_propagateEvent(_XQEvent *newq, int mask, BOOL weakMouseEvent) {
 	char winclass[32];
 	EB_Window *attrib;
 	XEvent *new;
 	SWP child;
 	SWP parent;
 
-	new = newq->xevent;
+	new = &newq->event;
 	WinQueryWindowPos(new->xany.window, &child);
-	while(TRUE)
-	{
-		winclass[WinQueryClassName(new->xany.window, sizeof(winclass), winclass)] = 0;
-		if ((strcmp(winclass,"XPMChild") == 0)
-			&& (attrib = WinQueryWindowPtr(new->xany.window, QWP_WINDOW)))
-		{
-			if (new->type == MotionNotify &&
-				attrib->winattrib->your_event_mask & PointerMotionHintMask)
-			{
+	while(TRUE) {
+		EB_Window *ebw = getResource(EBWINDOW, new->xany.window);
+		winclass[WinQueryClassName(ebw->hwnd, sizeof(winclass), winclass)] = 0;
+		if(!strcmp(winclass,"XPMChild")) {
+			if(new->type == MotionNotify && ebw->event_mask & PointerMotionHintMask) {
 				if(weakMouseEvent)
 					break;
 				else
 					new->xmotion.is_hint = NotifyHint;
 			}
-			if (attrib->winattrib->your_event_mask & mask) {
-				Daemon_addEvent(newq, False);
+			if(ebw->event_mask & mask) {
+				Daemon_doEvent(newq, ebw->event_masks, mask);
 				return;
-			}
-			else
-				if (attrib->winattrib->do_not_propagate_mask & mask)
+			} else
+				if(ebw->do_not_propagate_mask & mask)
 					break;
 			new->xkey.subwindow = new->xany.window;
-			new->xany.window = WinQueryWindowULong(new->xany.window, QWP_PARENTHWND);
-			WinQueryWindowPos(new->xany.window, &parent);
-			new->xkey.x += child.x + attrib->winattrib->border_width;
-			new->xkey.y += parent.cy - child.y - 1 + attrib->winattrib->border_width;
+			new->xany.window = getWindow(getParent(ebw->hwnd), False, NULL);
+			if(!new->xany.window)
+				break;
+			WinQueryWindowPos(ebw->hwnd, &parent);
+			new->xkey.x += child.x + ebw->border_width;
+			new->xkey.y += parent.cy - child.y - 1 + ebw->border_width;
 			child.x = parent.x;
 			child.y = parent.y;
-		}
-		else
+			Daemon_doEvent(newq, ebw->event_masks, mask);
+			return;
+		} else
 			break;
 	}
 	sfree(newq);
-#endif
 }
 
-void Daemon_recurseEvent(EB_Resource *origq, XEvent *orig, int mask, Window stop)
+void Daemon_recurseEvent(_XQEvent *origq, XEvent *orig, int mask, Window stop)
 {
 #if 0
 	char winclass[32];
@@ -218,18 +234,16 @@ EXPENTRY Status Daemon_SendEvent(Display *display, Window w, Bool propagate,
 	return True;
 }
 
-EXPENTRY void Daemon_freeEventQueue(EB_Resource **chain) {
-	EB_Resource *current = *chain;
+EXPENTRY void Daemon_freeEventQueue(Display *display) {
+	_XQEvent *current = display->head;
 
 	if(current) {
-		EB_Resource *next = current->next;
+		_XQEvent *next = current->next;
 		sfree(current);
 		while((current = next)) {
 			next = current->next;
-			sfree(current->xevent);
-			freeResource(current);
+			sfree(current);
 		}
-		sfree(current);
-		*chain = NULL;
+		display->head = display->tail = NULL;
 	}
 }

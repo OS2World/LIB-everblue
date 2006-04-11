@@ -2,11 +2,13 @@
 
 // Everblue is synchronized -> we need no flushing
 
+#if 0
 int XFlush(Display* display)
 {
 	DBUG_ENTER("XFlush")
 	DBUG_RETURN(1);
 }
+#endif
 
 void _XFlush(Display *dpy) {
 }

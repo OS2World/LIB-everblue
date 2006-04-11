@@ -37,14 +37,14 @@ XDMN_DEF=xdaemon.def
 EXELIBS=-L. -lxdaemon -lebhook
 
 XDMN_SRC=\
-	ProcFrame.c XEventThread.c UMOpenPipe.c \
+	UMMapWindow.c ProcFrame.c ProcHookmsg.c UMOpenPipe.c \
 	UMDestroyWindow.c UMFreeResources.c UMSetWindowPos.c \
 	UMCreateWindow.c ProcBorder.c InitializePM.c ProcMessage.c \
 	ShutDownPM.c xdaemon.c ProcWindow.c \
 	PMWM.c
 
 XDMN_OBJ=\
-	ProcFrame$(EXT) XEventThread$(EXT) UMOpenPipe$(EXT) \
+	UMMapWindow$(EXT) ProcFrame$(EXT) ProcHookmsg$(EXT) UMOpenPipe$(EXT) \
 	UMDestroyWindow$(EXT) UMFreeResources$(EXT) UMSetWindowPos$(EXT) \
 	UMCreateWindow$(EXT) ProcBorder$(EXT) InitializePM$(EXT) ProcMessage$(EXT) \
 	ShutDownPM$(EXT) xdaemon$(EXT) ProcWindow$(EXT) \

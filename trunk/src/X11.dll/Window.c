@@ -3,17 +3,31 @@
 Status XGetGeometry(register Display *dpy, Drawable d, Window *root, int *x,
 		int *y, unsigned int *width, unsigned int *height,
 		unsigned int *borderWidth, unsigned int *depth) {
+	DBUG_ENTER("XGetGeometry")
 	getDrawableGeometry(d, x, y, width, height, borderWidth, depth);
 	if(root)
 		*root = DefaultRootWindow(dpy);
-	return True;
+	DBUG_RETURN(True);
 }
 
 Status XGetWindowAttributes(register Display *dpy, Window w, XWindowAttributes *attr) {
+	DBUG_ENTER("XGetWindowAttributes")
+	HWND parenthwnd;
 	EB_Window *ebw = getResource(EBWINDOW, w);
-	HWND parenthwnd = WinQueryWindow(ebw->hwnd, QW_PARENT);
+	if(ebw->hwnd == HWND_DESKTOP) {
+		parenthwnd = ebw->hwnd;
+		attr->map_state = IsViewable;
+	} else {
+		parenthwnd = WinQueryWindow(ebw->hwnd, QW_PARENT);
+		if(WinIsWindowVisible(parenthwnd))
+			attr->map_state = IsViewable;
+		else
+			if(WinIsWindowEnabled(parenthwnd))
+				attr->map_state = IsUnviewable;
+			else
+				attr->map_state = IsUnmapped;
+	}
 	EB_Resource *eventmaskres;
-
 	getDrawableGeometry(w, &attr->x, &attr->y, &attr->width, &attr->height,
 			&attr->border_width, &attr->depth);
 	attr->visual = DefaultVisual(dpy, 0);
@@ -27,13 +41,6 @@ Status XGetWindowAttributes(register Display *dpy, Window w, XWindowAttributes *
 	attr->save_under = ebw->save_under;
 	attr->colormap = COLORMAP;
 	attr->map_installed = True;
-	if(WinIsWindowVisible)
-		attr->map_state = IsViewable;
-	else
-		if(WinIsWindowEnabled(parenthwnd))
-			attr->map_state = IsUnviewable;
-		else
-			attr->map_state = IsUnmapped;
 	attr->all_event_masks = Daemon_orEventMasks(ebw->event_masks);
 	eventmaskres = Daemon_findEventMask(ebw->event_masks, process);
 	if(eventmaskres)
@@ -43,12 +50,13 @@ Status XGetWindowAttributes(register Display *dpy, Window w, XWindowAttributes *
 	attr->do_not_propagate_mask = ebw->do_not_propagate_mask;
 	attr->override_redirect = ebw->override_redirect;
 	attr->screen = DefaultScreenOfDisplay(dpy);
-	return True;
+	DBUG_RETURN(True);
 }
 
 Bool XTranslateCoordinates(register Display *dpy, Window src_win,
 		Window dest_win, int src_x, int src_y, int *dst_x, int *dst_y,
 		Window *child) {
+	DBUG_ENTER("XTranslateCoordinates")
 	SWP swp1, swp2;
 	POINTL temp;
 	HWND childhwnd;
@@ -58,14 +66,21 @@ Bool XTranslateCoordinates(register Display *dpy, Window src_win,
 	WinQueryWindowPos(ebw1->hwnd, &swp1);
 	WinQueryWindowPos(ebw2->hwnd, &swp2);
 	temp.x = src_x;
-	temp.y = swp1.cy - src_y - 1;
+	temp.y = swp1.cy - src_y;
 	WinMapWindowPoints(ebw1->hwnd, ebw2->hwnd, &temp, 1);
 	*dst_x = temp.x;
-	*dst_y = swp2.cy - temp.y - 1;
+	*dst_y = swp2.cy - temp.y;
 	childhwnd = WinWindowFromPoint(ebw2->hwnd, &temp, FALSE);
 	if(childhwnd && childhwnd != ebw2->hwnd)
 		*child = getWindow(ebw2->hwnd, TRUE, NULL);
 	else
 		*child = None;
-	return True;
+	DBUG_RETURN(True);
+}
+
+int XSetWindowBackground(register Display *dpy, Window w, unsigned long pixel) {
+    DBUG_ENTER("XSetWindowBackground")
+	EB_Window *ebw = getResource(EBWINDOW, w);
+	ebw->background_pixel = pixel;
+    DBUG_RETURN(1);
 }

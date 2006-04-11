@@ -1,10 +1,10 @@
 #include "ebhookdll.h"
 #include <emx/startup.h>
 
-EB_SemComplex xeventsem = { NULLHANDLE, NULLHANDLE, NULLHANDLE };
+EB_SemComplex xeventsem = { NULLHANDLE, NULLHANDLE, NULLHANDLE, FALSE };
 HMTX global_lock = NULLHANDLE;
 
-unsigned long APIENTRY _DLL_InitTerm(unsigned long mod_handle, unsigned long flag) {
+unsigned long _DLL_InitTerm(unsigned long mod_handle, unsigned long flag) {
 	switch(flag) {
 		case 0:
 			hk_module = mod_handle;

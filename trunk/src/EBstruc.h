@@ -5,7 +5,6 @@
 // Task Local Memory
 typedef struct {
         HAB hab;
-        HMQ hmq;
 } TLM;
 
 typedef struct {
@@ -18,7 +17,11 @@ typedef struct {
 	struct EB_Resource *hpsres; // EBHPS2 resource chain (for destruction when closing displ.)
 	struct EB_Resource *res; // arbitrary resource chain (for destruction when closing displ.)
 	struct EB_Resource *event_masks; // EBEVENTMASK2 chain
-	struct EB_Resource *event_queue; // EBEVENT chain
+	struct {
+		HMTX postmtx;
+		HEV postsem;
+		MRESULT postret;
+	};
 } EB_Process;
 
 // we cache a HPS for each Drawable/Process combination
@@ -28,6 +31,7 @@ typedef struct {
 	HPS hps;
 	HDC hdc;		// only needed for Pixmaps
 	HBITMAP hbm;	// only needed for Pixmaps
+	int currentheight; // reuse old clipping region, when resizing window
 } EB_HPS;
 
 typedef struct UserData {
@@ -70,8 +74,9 @@ typedef struct {
 
 typedef struct {
 	struct EB_Resource *hpscache; // EBHPS1
-	PBITMAPINFOHEADER pbmih;
+	PBITMAPINFO pbmih;
 	PBYTE data;
+	EB_HPS *lastone;
 } EB_Pixmap;
 
 typedef struct {
@@ -92,10 +97,15 @@ typedef struct {
 	HPOINTER pointer;
 } EB_Cursor;
 
+typedef struct {
+	int size;
+	XRectangle *rectangles;
+} EB_Rectangles;
+
 // resource types
 typedef enum {
 	EBANCHOR, EBWINDOW, EBPIXMAP, EBFONT, EBGCONTEXT, EBCURSOR, EBHPS1, EBHPS2,
-			EBPROCESS, EBEVENTMASK1, EBEVENTMASK2, EBEVENT
+			EBPROCESS, EBEVENTMASK1, EBEVENTMASK2, EBRECTANGLES
 } EB_ResID;
 
 // resource wrapper
@@ -114,6 +124,7 @@ typedef struct EB_Resource {
 		EB_GContext *ebgcontext;
 		EB_Cursor *ebcursor;
 		EB_Process *ebprocess;
+		EB_Rectangles *rectangles;
 		struct EB_Resource *ebresource; // 2nd descriptor for EBHPS#, EBEVENTMASK#
 		XEvent *xevent;
 		void *structure;

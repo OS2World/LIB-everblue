@@ -35,13 +35,12 @@ static int Xlib_DrawText(Display *dpy, Drawable d, GC gc, int x, int y,
 	POINTL ptl, aptl[TXTBOX_COUNT];
 	RECTL rectl;
 	EB_HPS *ebhps = getCachedHPS(process, d, gc);
-	int viewheight = getDrawableHeight(d);
 
 	if(!string || !length)
 		DBUG_RETURN(False);
 	GpiSetBackMix(ebhps->hps, BM_LEAVEALONE);
 	if(GpiQueryTextBox(ebhps->hps, length, (char *)string, TXTBOX_COUNT, aptl)) {
-		ptl.x = x; ptl.y = viewheight - 1 - y;
+		ptl.x = x; ptl.y = y;
 		rectl.xLeft = ptl.x + aptl[TXTBOX_TOPLEFT].x;
 		rectl.yTop = ptl.y + aptl[TXTBOX_TOPRIGHT].y;
 		rectl.xRight = ptl.x + aptl[TXTBOX_BOTTOMRIGHT].x;
@@ -65,6 +64,7 @@ static int Xlib_DrawText(Display *dpy, Drawable d, GC gc, int x, int y,
 			GpiCharString(ebhps->hps, 1, string);
 		if(return_x)
 			*return_x = aptl[TXTBOX_CONCAT].x;
+		finishedDrawing(d, ebhps);
 		DBUG_RETURN(True);
 	}
 	DBUG_RETURN(True);
@@ -86,5 +86,20 @@ int XDrawString(Display* display, Drawable d, GC gc, int x, int y,
 	if(display==0)printf(string);
 	if(display==0)DBUG_RETURN(0);
 	result = Xlib_DrawText(display, d, gc, x, y, str, length, CHS_CLIP, NULL);
+	DBUG_RETURN(result);
+}
+
+int XDrawImageString(Display* display, Drawable d, GC gc, int x, int y,
+		_Xconst char* string, int length) {
+	DBUG_ENTER("XDrawImageString")
+	int result;
+#ifdef OS2I18N
+	int tmplen = (length+1)*2;
+	char *str = alloca(tmplen);
+	length = Xlib_XlatISO8859_1(str, tmplen, (char *)string, length);
+#else
+	char *str = (char *)string;
+#endif
+	result = Xlib_DrawText(display, d, gc, x, y, str, length, CHS_CLIP | CHS_OPAQUE, NULL);
 	DBUG_RETURN(result);
 }

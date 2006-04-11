@@ -5,7 +5,7 @@ int XMoveResizeWindow(Display* display, Window w, int x, int y, unsigned int wid
 	DBUG_ENTER("XMoveResizeWindow")
 	UM_SetWindowPos *SizeParams = Xcalloc(1, sizeof(UM_SetWindowPos));
 
-//fprintf("MoveResize: %ld, %ld, %ld, %ld (%x)\n", x, y, width, height, w);
+//printf("MoveResize: %ld, %ld, %ld, %ld (%x)\n", x, y, width, height, w);
 
 	SizeParams->window = w;
 	SizeParams->x = x;
@@ -13,5 +13,6 @@ int XMoveResizeWindow(Display* display, Window w, int x, int y, unsigned int wid
 	SizeParams->width = width;
 	SizeParams->height = height;
 
-	DBUG_RETURN((int)Daemon_exec(process, UM_SETWINDOWPOS, SizeParams, NULL, 0));
+	int ret = (int)Daemon_exec(process, UM_SETWINDOWPOS, SizeParams);
+	DBUG_RETURN(ret);
 }

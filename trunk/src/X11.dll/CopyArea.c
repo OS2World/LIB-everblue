@@ -24,11 +24,13 @@ USHORT GXtoROPMode[16]	= {
 int XCopyArea(Display *dpy, Drawable src_drawable, Drawable dst_drawable, GC gc,
 		int src_x, int src_y, unsigned int width, unsigned int height, int dst_x, int dst_y) {
 	DBUG_ENTER("XCopyArea")
-	HPS src_hps = getCachedHPS(process, src_drawable, NULL)->hps;
-	HPS dst_hps = getCachedHPS(process, dst_drawable, gc)->hps;
-	EB_GContext *ebgc = getResource(EBGCONTEXT, gc->gid);
-    int rc;
-	EB_Resource *newq;
+	mutex_lock(global_lock, FALSE);
+	EB_HPS *src_ebhps = getCachedHPS(process, src_drawable, NULL);
+	EB_HPS *dst_ebhps = getCachedHPS(process, dst_drawable, gc);
+	HPS src_hps = src_ebhps->hps;
+	HPS dst_hps = dst_ebhps->hps;
+    int rc = GPI_OK;
+	_XQEvent *newq;
 	XEvent *new;
 	Pixmap temp;
 	HPS temphps;
@@ -38,9 +40,9 @@ int XCopyArea(Display *dpy, Drawable src_drawable, Drawable dst_drawable, GC gc,
 	int src_viewheight = getDrawableHeight(src_drawable);
 
 // TODO will be optimized to XOR/MASKED AND/XOR operations (no buffers!)
-	if(0 && ebgc->pixmask) {
-		EB_Pixmap *pixmask = getResource(EBPIXMAP, ebgc->pixmask);
-		HPS pixmaskhps = getCachedHPS(process, ebgc->pixmask, NULL)->hps;
+	if(gc->values.clip_mask && !gc->rects) {
+		EB_Pixmap *pixmask = getResource(EBPIXMAP, gc->values.clip_mask);
+		HPS pixmaskhps = getCachedHPS(process, gc->values.clip_mask, NULL)->hps;
 
 		POINTL aptl2a[3] = {
 			{ 0, 0 },
@@ -65,13 +67,13 @@ int XCopyArea(Display *dpy, Drawable src_drawable, Drawable dst_drawable, GC gc,
 		POINTL aptl2e[3] = {
 			{ 0, 0 },
 			{ width, height },
-			{ ebgc->xgc.values.clip_x_origin - dst_x, pixmask->pbmih->cy - ebgc->xgc.values.clip_y_origin + dst_y - height }
+			{ gc->values.clip_x_origin - dst_x, pixmask->pbmih->cy - gc->values.clip_y_origin + dst_y - height }
 		};
 
-		if(ebgc->xgc.values.function != GXcopy)
-			fprintf(stderr, "function: %x not supported with clip mask in XCopyArea\n", ebgc->xgc.values.function);
+		if(gc->values.function != GXcopy)
+			fprintf(stderr, "function: %x not supported with clip mask in XCopyArea\n", gc->values.function);
 
-		temp = XCreatePixmap(dpy, HWND_DESKTOP, width, height, 24);
+		temp = XCreatePixmap(dpy, HWND_DESKTOP, width, height, 32);
 		temphps = getCachedHPS(process, temp, NULL)->hps;
 		GpiSetBackColor(temphps, 0xffffff);
 		GpiSetColor(temphps, 0);
@@ -79,7 +81,7 @@ int XCopyArea(Display *dpy, Drawable src_drawable, Drawable dst_drawable, GC gc,
 		GpiBitBlt(temphps, pixmaskhps, 3, aptl2e, ROP_SRCCOPY, 0);
 		GpiBitBlt(temphps, dst_hps, 3, aptl2b, ROP_SRCAND, 0);
 
-		temp2 = XCreatePixmap(dpy, HWND_DESKTOP, width, height, 24);
+		temp2 = XCreatePixmap(dpy, HWND_DESKTOP, width, height, 32);
 		temp2hps = getCachedHPS(process, temp2, NULL)->hps;
 		GpiSetBackColor(temp2hps, 0);
 		GpiSetColor(temp2hps, 0xffffff);
@@ -98,15 +100,23 @@ int XCopyArea(Display *dpy, Drawable src_drawable, Drawable dst_drawable, GC gc,
 			{ src_x, src_viewheight - src_y - height }
 		};
 
-		rc = GpiBitBlt(dst_hps, src_hps, 3, aptl, GXtoROPMode[ebgc->xgc.values.function], 0);
+		rc = GpiBitBlt(dst_hps, src_hps, 3, aptl, GXtoROPMode[gc->values.function], 0);
 	}
 
+	finishedDrawing(dst_drawable, dst_ebhps);
+
+	mutex_unlock(global_lock);
+
+
 // TODO GraphicsExpose must be implemented with WinQueryVisibleRegion!!!
-	if(ebgc->xgc.values.graphics_exposures) {
+	if(gc->values.graphics_exposures) {
+		UM_CreateEvent *EventParams = Xcalloc(1, sizeof(UM_CreateEvent));
 		new = Daemon_createEvent(&newq, dst_drawable, NoExpose);
 		new->xnoexpose.major_code = X_CopyArea;
 		new->xnoexpose.minor_code = 0;
-		Daemon_addEvent(newq, process, False);
+		EventParams->procres = process;
+		EventParams->event = newq;
+		Daemon_exec(process, UM_CREATEEVENT, EventParams);
 	}
 
 	if(rc != GPI_OK)

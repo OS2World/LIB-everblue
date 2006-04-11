@@ -11,8 +11,8 @@ Window um_createWindow(UM_CreateWindow *args) {
 	HWND hwndClient, hwndBorder;
 	EB_Window *parent = getResource(EBWINDOW, args->parent);
 	BOOL decorated = !args->newwind->override_redirect && parent->hwnd == HWND_DESKTOP;
-	int borderwidth, borderheight, titlebar;
-	SWP parentpos, border;
+	int titlebar;
+	SWP parentpos;
 	PSZ pszClass;
 	FRAMECDATA framectl = { sizeof(FRAMECDATA),
 			FCF_TITLEBAR | FCF_SYSMENU | FCF_MINMAX | FCF_SIZEBORDER, 0, 0 };
@@ -22,6 +22,8 @@ Window um_createWindow(UM_CreateWindow *args) {
 
 	Window windowres;
 
+fprintf(logfile, "Creating window (%x x %x), %x\n", args->width, args->height, args->newwind->override_redirect);
+fflush(logfile);
 	if(args->newwind->background_pixmap)
 		monitorResource((EB_Resource *)args->newwind->background_pixmap);
 	if(args->newwind->cursor)
@@ -35,43 +37,45 @@ Window um_createWindow(UM_CreateWindow *args) {
 
 	if(decorated) {
 		pszClass = WC_FRAME;
-		borderwidth = WinQuerySysValue(HWND_DESKTOP, SV_CXSIZEBORDER);
-		borderheight = WinQuerySysValue(HWND_DESKTOP, SV_CYSIZEBORDER);
 		titlebar = WinQuerySysValue(HWND_DESKTOP, SV_CYTITLEBAR);
 	} else {
 		pszClass = "XPMBorder";
-		borderwidth = borderheight = args->newwind->border_width;
 		titlebar = 0;
 	}
 
 	WinQueryWindowPos(parent->hwnd, &parentpos);
+fprintf(logfile, "Parent (%x, %x, %x, %x): %x\n", parentpos.x, parentpos.y, parentpos.cx, parentpos.cy, parent->hwnd);
+fprintf(logfile, "create with size: %x (%x), position: %x\n", args->height + 2 * args->newwind->border_width + titlebar, args->height, parentpos.cy - args->height - args->newwind->border_width - args->y - titlebar);
+fprintf(logfile, "position calc: %x - %x - %x - %x - %x\n", parentpos.cy, args->height, args->newwind->border_width, args->y, titlebar);
+fflush(logfile);
 	hwndBorder = WinCreateWindow(parent->hwnd, pszClass, pszTitle, flStyle,
-			args->x - borderwidth,
-			parentpos.cy - args->height - borderheight - args->y - titlebar,
-			0, 0,
-			NULLHANDLE, HWND_TOP, FID_BORDER,
+			0, 0, 0, 0,
+			NULLHANDLE, HWND_TOP, (pszClass == WC_FRAME ? FI_FRAME : FID_BORDER),
 			(pszClass == WC_FRAME ? &framectl : NULL), &presmain);
-	WinSetWindowPos(hwndBorder, 0, 0, 0,
-			args->width + 2 * borderwidth,
-			args->height + 2 * borderheight + titlebar, SWP_SIZE);
 	if(decorated) {
+		if(!args->newwind->border_width)
+			args->newwind->border_width = 1;
 		WinSendMsg(hwndBorder, WM_SETBORDERSIZE, (MPARAM)args->newwind->border_width, (MPARAM)args->newwind->border_width);
 		pfnFrame = WinSubclassWindow(hwndBorder, framewndproc);
 		DosQueryModuleHandle("xdaemon", &xmod);
 		if(xmod && (tmpicon = WinLoadPointer(HWND_DESKTOP, xmod, PMXLIB_DEFAULT_ICON)))
 			WinSendMsg(hwndBorder, WM_SETICON, (MPARAM)tmpicon, 0);
 	}
-	WinQueryWindowPos(hwndBorder, &border);
+	WinSetWindowPos(hwndBorder, 0,
+			args->x - args->newwind->border_width,
+			parentpos.cy - args->height - args->newwind->border_width - args->y - titlebar,
+			args->width + 2 * args->newwind->border_width,
+			args->height + 2 * args->newwind->border_width + titlebar, SWP_SIZE | SWP_MOVE);
 	hwndClient = WinCreateWindow(hwndBorder, "XPMChild", pszTitle,
-			flStyle | WS_VISIBLE,
+			flStyle | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
 			args->newwind->border_width,
 			args->newwind->border_width,
-			border.cx - 2 * args->newwind->border_width,
-			border.cy - 2 * args->newwind->border_width - titlebar,
+			args->width,
+			args->height,
 			NULLHANDLE,
 			HWND_TOP, FID_CLIENT, args->newwind, NULL);
 
-	windowres = getWindow(hwndClient, FALSE, NULL);
+	windowres = getWindow(hwndClient, TRUE, NULL);
 
 	addResource(&args->process->ebprocess->res, (EB_Resource *)windowres);
 	if(args->event_mask)

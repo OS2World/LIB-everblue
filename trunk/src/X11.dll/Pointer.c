@@ -40,7 +40,7 @@ Bool XQueryPointer(Display* display, Window w, Window* root_return, Window* chil
 
 	WinQueryPointerPos(HWND_DESKTOP, &ptl);
 	if(root_return)
-		*root_return = (Window)Daemon_RootWindow();
+		*root_return = Daemon_RootWindow();
 	if(root_x_return)
 		*root_x_return = ptl.x;
 	if(root_y_return)

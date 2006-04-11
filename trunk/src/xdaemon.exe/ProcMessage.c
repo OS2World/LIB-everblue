@@ -4,6 +4,13 @@
 MRESULT EXPENTRY pmhwndproc(HWND hWnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 	MRESULT result;
 
+	if(msg == UM_HOOKMSG) {
+		getReadAccess(&xeventsem);
+		hook_msg(msgxchange.hwnd, msgxchange.msg, msgxchange.mp1, msgxchange.mp2, msgxchange.time, msgxchange.ptl);
+		return 0;
+	}
+
+	mutex_lock(global_lock, FALSE);
 	if(msg != WM_TIMER) {
 		fprintf(logfile, "Processing pmhwnd event: %x\n", (int)msg);
 		fflush(logfile);
@@ -20,12 +27,30 @@ MRESULT EXPENTRY pmhwndproc(HWND hWnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 		result = (MRESULT)WinLoadPointer(HWND_DESKTOP, module, (int)mp1 + 0x1000);
 		break;
 	}
-	case UM_OPENPIPE:
-		um_openPipe(PVOIDFROMMP(mp1));
+	case UM_OPENHANDLES:
+		um_openHandles(PVOIDFROMMP(mp1));
 		break;
 	case UM_CREATEWINDOW:
 		result = (MRESULT)um_createWindow(PVOIDFROMMP(mp1));
 		sfree(PVOIDFROMMP(mp1));
+		break;
+	case UM_MAPWINDOW:
+		result = (MRESULT)um_mapWindow((Window)mp1);
+		break;
+	case UM_MAPSUBWINDOWS:
+		result = (MRESULT)um_mapSubwindows((Window)mp1);
+		break;
+	case UM_UNMAPWINDOW:
+		result = (MRESULT)um_unmapWindow((Window)mp1);
+		break;
+	case UM_LOWERWINDOW:
+		result = (MRESULT)um_lowerWindow((Window)mp1);
+		break;
+	case UM_RAISEWINDOW:
+		result = (MRESULT)um_raiseWindow((Window)mp1);
+		break;
+	case UM_MAPRAISED:
+		result = (MRESULT)um_mapRaised((Window)mp1);
 		break;
 	case UM_DESTROYWINDOW:
 		result = (MRESULT)um_destroyWindow(PVOIDFROMMP(mp1));
@@ -55,6 +80,12 @@ MRESULT EXPENTRY pmhwndproc(HWND hWnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 				WinSetWindowPos((HWND)args->w, 0, args->x, swp.cy - args->y - 1, 0, 0, SWP_MOVE);
 				result = (MRESULT)1;
 			}
+			break;
+		}
+	case UM_CREATEEVENT: {
+			UM_CreateEvent *EventParams = (UM_CreateEvent *)PVOIDFROMMP(mp1);
+			Daemon_addEvent(EventParams->event, EventParams->procres, False);
+			sfree(PVOIDFROMMP(mp1));
 			break;
 		}
 #if 0
@@ -328,5 +359,11 @@ printf("hier!");
 		fprintf(logfile, "...finished (%x)\n", (int)WinGetLastError(pmctls_hab));
 		fflush(logfile);
 	}
+	if(msg >= UM_FROM_X11_DLL) {
+		EB_Process *process = getResource(EBPROCESS, (XID)mp2);
+		process->postret = result;
+		DosPostEventSem(process->postsem);
+	}
+	mutex_unlock(global_lock);
 	return result;
 }

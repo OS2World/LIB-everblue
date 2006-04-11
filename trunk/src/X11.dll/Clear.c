@@ -24,8 +24,8 @@ int XClearArea(Display* display, Window w, int x, int y,
 		height = realheight - y;
 	rectl.xLeft = x;
 	rectl.xRight = x + width;
-	rectl.yTop = realheight - y;
-	rectl.yBottom = rectl.yTop - height;
+	rectl.yTop = y;
+	rectl.yBottom = y + height;
 	WinFillRect(ebhps->hps, &rectl, ebw->background_pixel);
 	if(exposures)
 		WinInvalidateRect(ebw->hwnd, &rectl, False);

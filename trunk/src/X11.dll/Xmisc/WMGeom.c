@@ -24,8 +24,11 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/WMGeom.c,v 1.4 2003/11/17 22:20:08 dawes Exp $ */
+/* $XFree86: xc/lib/X11/WMGeom.c,v 1.3 2003/04/13 19:22:18 dawes Exp $ */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include "Xlibint.h"
 #include "Xutil.h"
 

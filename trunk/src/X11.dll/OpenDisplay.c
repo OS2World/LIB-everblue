@@ -39,8 +39,10 @@ EXPENTRY Display *XOpenDisplay(_Xconst char *displayname) {
 
 	ebproc->display->fd = open("\\PIPE\\EVERBLUE", O_RDONLY | O_BINARY);
 	EMXRegisterHandle(ebproc->display->fd);	
+	mutex_createopen(&ebproc->postmtx);
+	event_createopen(&ebproc->postsem, FALSE);
 
-	Daemon_exec(process, UM_OPENPIPE, process, NULL, 0);
+	Daemon_exec(process, UM_OPENHANDLES, process);
 
 	OsInitColors();
 
@@ -51,7 +53,7 @@ EXPENTRY Display *XOpenDisplay(_Xconst char *displayname) {
 
 EXPENTRY int XCloseDisplay(Display* dpy) {
 	DosClose(process->ebprocess->display->fd);
-	Daemon_exec(process, UM_FREERESOURCES, process, NULL, 0);
+	Daemon_exec(process, UM_FREERESOURCES, process);
 	freeOldHPS(&process->ebprocess->hpstodelete);
 	freeOldHPS(&process->ebprocess->hpsres);
 	Daemon_Thread_Close(&process);

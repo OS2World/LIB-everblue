@@ -1,3 +1,4 @@
+/* $XdotOrg: xc/lib/X11/HVC.c,v 1.3 2005/05/13 22:53:43 sandmann Exp $ */
 /* $Xorg: HVC.c,v 1.3 2000/08/17 19:44:36 cpqbld Exp $ */
 
 /*
@@ -47,8 +48,11 @@
  *	DOCUMENTATION
  *		"TekColor Color Management System, System Implementor's Manual"
  */
-/* $XFree86: xc/lib/X11/HVC.c,v 1.4 2003/04/13 19:22:16 dawes Exp $ */
+/* $XFree86: xc/lib/X11/HVC.c,v 1.3 2001/01/17 19:41:37 dawes Exp $ */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include "Xlibint.h"
 #include "Xcmsint.h"
 #include <X11/Xos.h>

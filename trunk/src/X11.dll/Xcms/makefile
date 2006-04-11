@@ -36,9 +36,10 @@ XLIB_OBJ=\
 ##################################################################
 
 all: $(XLIB_OBJ)
+	I:\unixos2\emx\bin\emxomfar.exe r Xcms *.o
 
 clean:
-	$(RM) $(XLIB_OBJ)
+	$(RM) $(XLIB_OBJ) Xcms.lib Xcms.bak
 
 ##################################################################
 

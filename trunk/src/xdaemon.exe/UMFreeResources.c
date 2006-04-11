@@ -19,6 +19,6 @@ void um_freeResources(EB_Resource *procres) {
 	}
 
 	Daemon_freeEventMask(&process->event_masks);
-	closePipe(process->pipeserver);
-	Daemon_freeEventQueue(&process->event_queue);
+	closeHandles(process->pipeserver, process->postsem);
+	Daemon_freeEventQueue(process->display);
 }

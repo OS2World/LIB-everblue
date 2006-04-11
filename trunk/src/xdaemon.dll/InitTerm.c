@@ -1,7 +1,7 @@
 #include "daemondll.h"
 #include <emx/startup.h>
 
-unsigned long APIENTRY _DLL_InitTerm(unsigned long mod_handle, unsigned long flag) {
+unsigned long _DLL_InitTerm(unsigned long mod_handle, unsigned long flag) {
 	switch (flag) {
 		case 0:
 			if(_CRT_init() != 0)

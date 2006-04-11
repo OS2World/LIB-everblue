@@ -31,8 +31,11 @@
  *		This utility routines for manipulating properties.
  *
  */
-/* $XFree86: xc/lib/X11/cmsProp.c,v 1.2 2003/04/13 19:22:20 dawes Exp $ */
+/* $XFree86$ */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include <X11/Xatom.h>
 #include "Xlibint.h"
 #include "Xcmsint.h"

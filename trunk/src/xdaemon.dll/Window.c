@@ -2,7 +2,7 @@
 
 Window root_window = 0;
 
-EXPENTRY EB_Resource *Daemon_RootWindow() {
+EXPENTRY Window Daemon_RootWindow() {
 	if(!root_window) {
 //		XWindowAttributes *desktopattrib;
 		EB_Window *root;
@@ -41,7 +41,7 @@ EXPENTRY EB_Resource *Daemon_RootWindow() {
         root->wm_client_leader = 0;
 	}
 
-	return (EB_Resource *)root_window;
+	return root_window;
 }
 
 /*EXPENTRY EB_Window *Daemon_getWindowFromHWnd(HWND hwnd) {

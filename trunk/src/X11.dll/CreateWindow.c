@@ -9,7 +9,7 @@ Window XCreateWindow(Display *display, Window parent, int x, int y,
 	UM_CreateWindow *CreateParams = Xcalloc(1, sizeof(UM_CreateWindow));
 	EB_Window *ebw = Xcalloc(1, sizeof(EB_Window));
 
-//printf("Create: %ld, %ld, %ld, %ld (%x->)\n", x, y, width, height, parent);
+fprintf(stderr, "Create: %ld, %ld, %ld, %ld (%x->)\n", x, y, width, height, parent);
 
 	ebw->xpmchild = True;
 	ebw->border_width = border_width;
@@ -50,12 +50,14 @@ Window XCreateWindow(Display *display, Window parent, int x, int y,
 	CreateParams->process = process;
 	CreateParams->newwind = ebw;
 
-	DBUG_RETURN((int)Daemon_exec(process, UM_CREATEWINDOW, CreateParams, NULL, 0));
+	Window win = (Window)Daemon_exec(process, UM_CREATEWINDOW, CreateParams);
+	DBUG_RETURN(win);
 }
 
 int XDestroyWindow(Display *display, Window window) {
 	DBUG_ENTER("XDestroyWindow")
-	DBUG_RETURN((int)Daemon_exec(process, UM_DESTROYWINDOW, (EB_Resource *)window, NULL, 0));
+	int ret = (int)Daemon_exec(process, UM_DESTROYWINDOW, (EB_Resource *)window);
+	DBUG_RETURN(ret);
 }
 
 Window XCreateSimpleWindow(Display* display, Window parent, int x, int y,
@@ -68,18 +70,17 @@ Window XCreateSimpleWindow(Display* display, Window parent, int x, int y,
 
 	attrib.background_pixel = background;
 	attrib.border_pixel = border;
-	DBUG_RETURN(XCreateWindow(display, parent, x, y, width, height,
+	Window win = XCreateWindow(display, parent, x, y, width, height,
 			border_width, 32, ebw->class, DefaultVisual(display, 1),
-			CWBackPixel | CWBorderPixel, &attrib));
+			CWBackPixel | CWBorderPixel, &attrib);
+	DBUG_RETURN(win);
 }
-
-#if 0
-void _XPurgeGC(Display* display, GC gc);
 
 int XDestroySubwindows(Display *display, Window window)
 {
 	DBUG_ENTER("XDestroySubwindows")
-	HENUM henum = WinBeginEnumWindows((HWND)window);
+	EB_Window *ebw = getResource(EBWINDOW, window);
+	HENUM henum = WinBeginEnumWindows(ebw->hwnd);
 	HWND w;
 
 	if (!henum)
@@ -88,11 +89,9 @@ int XDestroySubwindows(Display *display, Window window)
 	while ((w = WinQueryWindow(WinGetNextWindow(henum), QW_TOP)))
 	{
 		XDestroySubwindows(display, w);
-		WinSendMsg(mainhwnd, UM_DestroyWindow,
-			(MPARAM)WinQueryWindow(w, QW_PARENT), 0);
+		Daemon_exec(process, UM_DESTROYWINDOW, (EB_Resource *)getWindow(w, TRUE, NULL));
 	}
 
 	WinEndEnumWindows(henum);
 	DBUG_RETURN(True);
 }
-#endif

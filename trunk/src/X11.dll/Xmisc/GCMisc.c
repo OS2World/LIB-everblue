@@ -24,8 +24,11 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/GCMisc.c,v 1.4 2001/12/14 19:54:00 dawes Exp $ */
+/* $XFree86: xc/lib/X11/GCMisc.c,v 1.3 2001/01/17 19:41:36 dawes Exp $ */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include "Xlibint.h"
 
 int
