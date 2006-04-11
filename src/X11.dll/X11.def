@@ -5,6 +5,8 @@ CODE
 DATA	
 	MULTIPLE NONSHARED
 STACKSIZE 1310720
+IMPORTS
+	GpiEnableYInversion = PMGPI.723
 EXPORTS
 	XSaveContext = _XSaveContext @ 1
 	XFindContext = _XFindContext @ 2

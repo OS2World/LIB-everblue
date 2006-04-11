@@ -18,7 +18,7 @@
 #include <umalloc.h>
 #include <malloc.h>
 
-#define MAX_HEAPSIZE (2*1048576)
+#define MAX_HEAPSIZE (50*1048576)
 #define PAGE_SIZE 4096
 #define MAX_HEAPPAGES (MAX_HEAPSIZE/PAGE_SIZE)
 #define INCR_HEAPSIZE (16*1024)
@@ -216,6 +216,7 @@ void *getmoreShared(Heap_t pHeap, size_t *size, int *clean)
 	    if(nrpagesfree)
     		i += nrpagesfree-1;
     }
+	fprintf(stderr, "HeapShared: getmoreShared NOTHING LEFT!!!\n");
 #ifdef LOGFILENAME
 	alloclog = fopen(LOGFILENAME, "a");
     fprintf(alloclog, "HeapShared: getmoreShared NOTHING LEFT (%d)\n", *size);
@@ -283,7 +284,7 @@ EXPENTRY void *srealloc(void *mem, int size)
 {
     void *chunk;
 
-	if(!size);
+	if(!size)
 		size = 1;
 	chunk = realloc(mem, size);
 #ifdef LOGFILENAME
@@ -303,6 +304,11 @@ EXPENTRY void sfree(void *mem)
     fprintf(alloclog, "sfree freed %x\n", mem);
 	fclose(alloclog);
 #endif
+}
+//******************************************************************************
+//******************************************************************************
+EXPENTRY BOOL schck() {
+    return (_uheapchk(sharedHeap) != _HEAPOK);
 }
 //******************************************************************************
 //******************************************************************************

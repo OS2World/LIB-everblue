@@ -14,12 +14,6 @@ char *AtomTbl[1024] = { "", NULL };
 char AtomBuf[65536], *AtomTail = AtomBuf;
 int LastAtom = 1;
 
-int getpid(void) {
-	PPIB pib;
-	DosGetInfoBlocks(NULL, &pib);
-	return pib->pib_ulpid;
-}
-
 Xlib_Grab *hook_newGrab(void)
 {
 	Xlib_Grab *newg;
@@ -33,7 +27,7 @@ Xlib_Grab *hook_newGrab(void)
 		newg = &GrabList[LastGrab++];
 
 		newg->special = 0;
-	newg->pid = getpid();
+	newg->pid = getPid();
 	newg->next = NULL;
 
 	if(Grab == NULL)
@@ -54,7 +48,7 @@ Xlib_Grab *hook_newGrab(void)
 void hook_removeGrab(int type)
 {
 	Xlib_Grab *prev = NULL, *tmp;
-	int pid = getpid();
+	int pid = getPid();
 
 	DosRequestMutexSem(hook_lock, SEM_INDEFINITE_WAIT);
 
@@ -128,7 +122,7 @@ Xlib_Grab *__FindGrab(int pid, int type)
 
 Xlib_Grab *hook_findGrab(int type)
 {
-	return __FindGrab(getpid(), type);
+	return __FindGrab(getPid(), type);
 }
 
 BOOL hook_inputQueueHook(HAB hab, PQMSG pQmsg, USHORT fs)
@@ -196,8 +190,11 @@ BOOL hook_inputQueueHook(HAB hab, PQMSG pQmsg, USHORT fs)
 	case WM_BUTTON2UP:
 	case WM_BUTTON3UP:
 	case WM_BUTTON1DOWN:
+	case WM_BUTTON1DBLCLK:
 	case WM_BUTTON2DOWN:
+	case WM_BUTTON2DBLCLK:
 	case WM_BUTTON3DOWN:
+	case WM_BUTTON3DBLCLK:
 	case WM_MOUSEMOVE:
 		if((current = __FindGrab(0,GrabPointer)) && 
 		CLIENTHWND(pQmsg->hwnd) != (client = CLIENTHWND(current->window)))

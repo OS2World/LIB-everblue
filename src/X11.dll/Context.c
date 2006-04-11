@@ -155,7 +155,7 @@ int XSaveContext(display, rid, context, data)
 	    UnlockDisplay(display);
 	}
     }
-    mutex_lock(db->linfo, TRUE);
+    mutex_lock(db->linfo, FALSE);
     head = &Hash(db, rid, context);
     mutex_unlock(db->linfo);
     for (entry = *head; entry; entry = entry->next) {
@@ -172,7 +172,7 @@ int XSaveContext(display, rid, context, data)
     entry->data = (XPointer)data;
     entry->next = *head;
     *head = entry;
-    mutex_lock(db->linfo, TRUE);
+    mutex_lock(db->linfo, FALSE);
     db->numentries++;
     if (db->numentries > (db->mask << 2))
 	ResizeTable(db);
@@ -207,7 +207,7 @@ int XFindContext(display, rid, context, data)
     }
     if (!db)
 	DBUG_RETURN(XCNOENT);
-    mutex_lock(db->linfo, TRUE);
+    mutex_lock(db->linfo, FALSE);
     for (entry = Hash(db, rid, context); entry; entry = entry->next)
     {
 	if (entry->rid == rid && entry->context == context) {
@@ -246,7 +246,7 @@ int XDeleteContext(display, rid, context)
     }
     if (!db)
 	DBUG_RETURN(XCNOENT);
-    mutex_lock(db->linfo, TRUE);
+    mutex_lock(db->linfo, FALSE);
     for (prev = &Hash(db, rid, context);
 	 (entry = *prev);
 	 prev = &entry->next) {

@@ -113,8 +113,17 @@ int XGetWindowProperty(Display* display, Window w, Atom property, long long_offs
 	*actual_format_return = 0;
 	*nitems_return = 0;
 
-	if (((tmpatm = XInternAtom(display, "__SWM_VROOT", True)) && tmpatm == property)) {
-		/* not useful in Everblue */
+	if(((tmpatm = XInternAtom(display, "__SWM_VROOT", True)) && tmpatm == property)) {
+		if(ebw->hwnd != HWND_DESKTOP && !ebw->xpmchild && WinQueryWindowUShort(ebw->hwnd, QWS_ID) == FI_FRAME) {
+			if(!WinWindowFromID(ebw->hwnd, 0x0056))
+				DBUG_RETURN(Success);
+			Window wps = getWindow(ebw->hwnd, TRUE, NULL);
+			*prop_return = Xmalloc(sizeof(Window));
+			memcpy(*prop_return, &wps, sizeof(Window));
+			*actual_type_return = XA_WINDOW;
+			*actual_format_return = sizeof(Window) * 8;
+			*nitems_return = 1;
+		}
 	} else if((tmpatm = XInternAtom(display, "WM_NORMAL_HINTS", True)) && tmpatm == property) {
 		if(ebw->hints /*&& req_type == (XA_WM_HINTS || AnyPropertyType)*/) {
 			*actual_type_return = XA_WM_SIZE_HINTS;
@@ -139,16 +148,9 @@ int XGetWindowProperty(Display* display, Window w, Atom property, long long_offs
 			*prop_return = (unsigned char *)strdup(display->xdefaults);
 		}
 	} else {
-		char *st1, *st2;
 		UserData *data;
 
 		data = Xlib_get_data(ebw, property);
-		fprintf(stderr, "UM_GetWinProperty newly implemented! (found: %x)\n   property='%s', type='%s', \n",
-				(int)data,
-				st1=XGetAtomName(display,  property),
-				st2=XGetAtomName(display,  (int)req_type));
-		Xfree(st1);
-		Xfree(st2);
 		if(data) {
 			if(req_type != AnyPropertyType && req_type != data->type) {
 				*actual_type_return = data->type;

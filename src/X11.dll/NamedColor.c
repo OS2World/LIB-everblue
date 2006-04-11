@@ -126,7 +126,7 @@ Status XParseColor(register Display *dpy, Colormap cmap, _Xconst char *spec,
 
 	DBUG_ENTER("XParseColor")
 	if(!spec)
-		return(0);
+		DBUG_RETURN(0);
 	n = strlen(spec);
 	if(*spec == '#') {
 		/*
@@ -161,10 +161,11 @@ Status XParseColor(register Display *dpy, Colormap cmap, _Xconst char *spec,
 		def->green = g << n;
 		def->blue = b << n;
 		def->flags = DoRed | DoGreen | DoBlue;
-		return (1);
+		DBUG_RETURN(1);
 	}
 
 
+printf(".");
 	/*
 	 * Let's Attempt to use Xcms and i18n approach to Parse Color
 	 */
@@ -188,6 +189,7 @@ Status XParseColor(register Display *dpy, Colormap cmap, _Xconst char *spec,
 		}
 	}
 
+printf(".");
 	/*
 	 * Xcms and i18n methods failed.
 	 */
@@ -205,6 +207,7 @@ Status XParseColor(register Display *dpy, Colormap cmap, _Xconst char *spec,
 
 	/*printf("Color '%s' -> (%d,%d,%d) = %ld\n",spec,sr,sg,sb,def->pixel);*/
 
+printf(".");
 	DBUG_RETURN(1);
 }
 

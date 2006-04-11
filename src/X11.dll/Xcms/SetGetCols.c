@@ -32,13 +32,16 @@
  *
  *
  */
-/* $XFree86: xc/lib/X11/SetGetCols.c,v 1.2 2003/04/13 19:22:17 dawes Exp $ */
+/* $XFree86$ */
 
 /*
  *      EXTERNAL INCLUDES
  *              Include files that must be exported to any package or
  *              program using this package.
  */
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include "Xlibint.h"
 #include "Xcmsint.h"
 #include "Cv.h"

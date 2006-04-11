@@ -3,4 +3,3 @@
 ___init_dll:
 		cld
     	jmp     _DLL_InitTerm
-        ret

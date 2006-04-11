@@ -17,16 +17,20 @@ volatile struct Xlib_DebugInfo_st {
                 Xlib_DebugOffset = --DebugLevel;                \
         }
 #define DBUG_RETURN(a) {                                        \
+				Xlib_DebugLeave((unsigned int)a);               \
                 DBUG_LEAVE;                                     \
                 return (a);                                     \
         }
 #define DBUG_VOID_RETURN {                                      \
+				Xlib_DebugLeaveVoid();                          \
                 DBUG_LEAVE;                                     \
                 return;                                         \
         }
 
 volatile int Xlib_DebugOffset;
 int Xlib_DebugEnter(char*,int,char*,char*);
+void Xlib_DebugLeave(unsigned int a);
+void Xlib_DebugLeaveVoid();
 
 #else
 

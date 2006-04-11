@@ -26,17 +26,25 @@ static VOID GetInfoSegs() {
     G_pvLocalInfoSeg  = (PVOID)((LocalInfoSegSelector << 0x000D) & 0x01fff0000);
 }
 
-PID doshMyPID() {
+EXPENTRY PID getPid() {
     if (!G_pvLocalInfoSeg)
         GetInfoSegs();
 
     return *(PID *)G_pvLocalInfoSeg;
 }
 
-EXPENTRY void Daemon_getPMHandle(EB_Resource *procres, HAB *hab, HMQ *hmq) {
+EXPENTRY TID getTid() {
+    if (!G_pvLocalInfoSeg)
+        GetInfoSegs();
+
+    // TID is at offset 6 in the local info seg
+    return *(PUSHORT)((PBYTE)G_pvLocalInfoSeg + 6);
+}
+
+EXPENTRY void Daemon_getPMHandle(EB_Resource *procres, HAB *hab) {
 	PID current;
 	EB_Process *process = getResource(EBPROCESS, (XID)procres);
-	current = doshMyPID();
+	current = getPid();
 
 	if(current != process->pid) {
 		DosAllocThreadLocalMemory(1, (PULONG *)&process->tlm);
@@ -46,22 +54,21 @@ EXPENTRY void Daemon_getPMHandle(EB_Resource *procres, HAB *hab, HMQ *hmq) {
 	if(!*process->tlm) {
 		*process->tlm = malloc(sizeof(TLM));
 		(*process->tlm)->hab = WinInitialize(0);
-		(*process->tlm)->hmq = WinCreateMsgQueue((*process->tlm)->hab, 0);
-		WinGetLastError((*process->tlm)->hab); // PMERR_INV_MICROPS_FUNCTION???
+		WinCreateMsgQueue((*process->tlm)->hab, 0);
+		WinGetLastError((*process->tlm)->hab); // PMERR_INV_MICROPS_FUNCTION
+
 		process->threadcount++; // TODO: locking can be faster done with inline assembly
 	}
 	if(hab)
 		*hab = (*process->tlm)->hab;
-	if(hmq)
-		*hmq = (*process->tlm)->hmq;
 }
 
 EXPENTRY void Daemon_Thread_Close(EB_Resource **procres) {
 	EB_Process *process = getResource(EBPROCESS, (XID)*procres);
 
 	if(*process->tlm) { // we can only reach the current thread; PM does the rest
-		WinDestroyMsgQueue((*process->tlm)->hmq);
 		WinTerminate((*process->tlm)->hab);
+
 		free(*process->tlm);
 		process->threadcount--;
 	}

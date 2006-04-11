@@ -18,11 +18,10 @@ int main(void)
 		fprintf(logfile, "Error registering with xdaemon.dll\n");
 		exit(1);
 	}
-	um_openPipe(NULL);
+	um_openHandles(NULL);
 	DosExitList(EXLST_ADD, Xlib_ExitHandler);
-	_beginthread(xevent_thread, NULL, 65000, NULL);
 	initializePM();
-	DosWaitEventSem(xeventsem.write, SEM_INDEFINITE_WAIT);
+	releaseReadAccess(&xeventsem);
 	Daemon_xinitialized(pmctls_hab, mainhwnd);
 
 	while(WinGetMsg(pmctls_hab, &qmsg, 0, 0, 0)) {
@@ -35,7 +34,7 @@ int main(void)
 	Daemon_shutdown(pmctls_hab);
 	DosExitList(EXLST_REMOVE, (PFNEXITLIST)Xlib_ExitHandler);
 	shutDownPM();
-	closePipe(nextpipe);
+	closeHandles(nextpipe, NULLHANDLE);
 	fclose(logfile);
 	return 0;
 }

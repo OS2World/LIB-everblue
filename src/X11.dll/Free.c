@@ -1,10 +1,21 @@
 #include "X11.h"
 
-int XFree(void *data) {
+void EMXFree(void *data);
+
+int _XFree(void *data) {
 	DBUG_ENTER("XFree")
 	if(data) {
-		free(data);
+		if(data < (void *)0x40000000) // TODO - bad hack
+			EMXFree(data);    // workaround for support libaries,
+		else                  // which use old EMX malloc with XFree
+			sfree(data);
 		DBUG_RETURN(True);
 	} else
 		DBUG_RETURN(False);
+}
+
+int XFree(void *data) {
+	DBUG_ENTER("XFree")
+	int ret = _XFree(data);
+	DBUG_RETURN(ret);
 }

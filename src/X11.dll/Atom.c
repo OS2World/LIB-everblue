@@ -39,7 +39,7 @@ char *XGetAtomName(Display *dpy, Atom atom)
 	if (atom > 0 && atom <= XA_LAST_PREDEFINED)
 		entry = atomNames[atom];
 	if (entry) 
-		name = strdup(entry);
+		name = Xstrdup(entry);
 	DBUG_RETURN(name);
 }
 
@@ -78,8 +78,10 @@ Status XInternAtoms(Display* dpy, char** names, int count, Bool onlyIfExists, At
 	while (names && count) {
 		Atom atom;
 		atom = XInternAtom(dpy, *names, onlyIfExists);
-		if (atoms_return) *(atoms_return++) = atom;
-		count--; names++;
+		if(atoms_return)
+			*(atoms_return++) = atom;
+		count--;
+		names++;
 	}
 	DBUG_RETURN(True);
 }
@@ -88,7 +90,7 @@ void Xlib_InitAtoms(Display* dpy)
 {
 	DBUG_ENTER("Xlib_InitAtoms")
 	Atom i;
-	for (i = 1; i <= XA_LAST_PREDEFINED; i++) {
+	for(i = 1; i <= XA_LAST_PREDEFINED; i++) {
 		if (XInternAtom(dpy, atmNames[i], FALSE) == i)
 			continue;
 		fprintf(stderr,"Error initialising atoms!");

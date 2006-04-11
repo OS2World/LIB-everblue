@@ -1,16 +1,15 @@
 #include "daemondll.h"
 
-EXPENTRY MRESULT Daemon_exec(EB_Resource *process, ULONG id, void *params, void *user, int size) {
+EXPENTRY MRESULT Daemon_exec(EB_Resource *procres, ULONG id, void *params) {
+	ULONG temp;
 	MRESULT result;
-	void *usershared = NULL;
+	EB_Process *process = getResource(EBPROCESS, (XID)procres);
 
-	if(user) {
-		usershared = smalloc(size);
-		memcpy(usershared, user, size);
-	}
-	Daemon_getPMHandle(process, NULL, NULL);
-	result = WinSendMsg(objwindow, id, params, (MPARAM)usershared);
-	if(user)
-		sfree(usershared);
-	return result;
+	Daemon_getPMHandle(procres, NULL);
+	mutex_lock(process->postmtx, FALSE);
+	DosResetEventSem(process->postsem, &temp);
+	WinPostMsg(objwindow, id, params, procres);
+	DosWaitEventSem(process->postsem, SEM_INDEFINITE_WAIT);
+	mutex_unlock(process->postmtx);
+	return process->postret;
 }

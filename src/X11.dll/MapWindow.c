@@ -1,44 +1,37 @@
 #include "X11.h"
 
-int mapWindow(HWND hwnd) {
-	DBUG_ENTER("mapWindow")
-	char winclass[32];
-	HWND parenthwnd = WinQueryWindow(hwnd, QW_PARENT);
-
-	WinQueryClassName(parenthwnd, sizeof(winclass), winclass);
-	if(!strcmp(winclass, "#1") || !strcmp(winclass, "XPMBorder"))
-		WinSetWindowPos(parenthwnd, NULLHANDLE, 0, 0, 0, 0, SWP_SHOW | SWP_ACTIVATE);
-	else
-		WinSetWindowPos(hwnd, NULLHANDLE, 0, 0, 0, 0, SWP_SHOW);
-
-	DBUG_RETURN(TRUE);
-}
-
 int XMapWindow(Display* display, Window w) {
 	DBUG_ENTER("XMapWindow")
-	EB_Window *ebw = getResource(EBWINDOW, w);
-	mapWindow(ebw->hwnd);
-
-	DBUG_RETURN(TRUE);
+	int ret = (int)Daemon_exec(process, UM_MAPWINDOW, (void *)w);
+	DBUG_RETURN(ret);
 }
 
 int XMapSubwindows(Display *display, Window w) {
 	DBUG_ENTER("XMapSubwindows")
-	HENUM henum;
-	HWND child;
-	EB_Window *ebw = getResource(EBWINDOW, w);
+	int ret = (int)Daemon_exec(process, UM_MAPSUBWINDOWS, (void *)w);
+	DBUG_RETURN(ret);
+}
 
-	henum = WinBeginEnumWindows(ebw->hwnd);
-	while((child = WinGetNextWindow(henum)) != NULLHANDLE)
-		mapWindow(WinQueryWindow(child, QW_TOP));
-	DBUG_RETURN(WinEndEnumWindows(henum));
+int XUnmapWindow(Display* display, Window w) {
+	DBUG_ENTER("XUnmapWindow")
+	int ret = (int)Daemon_exec(process, UM_UNMAPWINDOW, (void *)w);
+	DBUG_RETURN(ret);
 }
 
 int XLowerWindow(Display* display, Window w) {
 	DBUG_ENTER("XLowerWindow")
-	EB_Window *ebw = getResource(EBWINDOW, w);
-	HWND parenthwnd = WinQueryWindow(ebw->hwnd, QW_PARENT);
+	int ret = (int)Daemon_exec(process, UM_LOWERWINDOW, (void *)w);
+	DBUG_RETURN(ret);
+}
 
-	WinSetWindowPos(parenthwnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_ZORDER);
-	DBUG_RETURN(TRUE);
+int XRaiseWindow(Display* display, Window w) {
+	DBUG_ENTER("XRaiseWindow")
+	int ret = (int)Daemon_exec(process, UM_RAISEWINDOW, (void *)w);
+	DBUG_RETURN(ret);
+}
+
+int XMapRaised(Display* display, Window w) {
+	DBUG_ENTER("XMapRaised")
+	int ret = (int)Daemon_exec(process, UM_MAPRAISED, (void *)w);
+	DBUG_RETURN(ret);
 }

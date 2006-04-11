@@ -1,11 +1,71 @@
 #include "X11.h"
 
+/* in lcWrap.c */
+extern HMTX *_Xi18n_lock;
+static HMTX i18n_lock;
+
+/* in Keyboard.c */
+extern unsigned int _XmaxKeyCode, _XminKeyCode;
+KeySym *_XkeyMap;
+void _XInitKeyMapping(void);
+
+
 ScreenFormat screenFormats[] = {
+	{NULL, 32, 32, 32},
 	{NULL, 24, 32, 32},
-	{NULL, 16, 16, 16},
 	{NULL, 8,  8, 8},
 	{NULL, 1,  1, 8}
 };
+
+
+#undef _XLockMutex
+#undef _XUnlockMutex
+#undef _XCreateMutex
+#undef _XFreeMutex 
+
+static void _XLockMutex(_LockInfoRec *lip) {
+    mutex_lock(*lip, FALSE);
+}
+
+static void _XUnlockMutex(_LockInfoRec *lip) {
+    mutex_unlock(*lip);
+}
+
+static void _XCreateMutex(_LockInfoRec *lip) {
+	mutex_createopen(lip);
+}
+
+static void _XFreeMutex(_LockInfoRec *lip) {
+    mutex_close(*lip);
+}
+
+static void _XUnlockDisplay(Display *dpy) {
+    mutex_unlock(dpy->lock);
+}
+
+static void _XLockDisplay(Display *dpy) {
+    mutex_lock(dpy->lock, FALSE);
+}
+
+/* returns 0 if initialized ok, -1 if unable to allocate
+   a mutex or other memory */
+
+static int _XInitDisplayLock(Display *dpy) {
+    dpy->lock_fns = (struct _XLockPtrs*)Xmalloc(sizeof(struct _XLockPtrs));
+    if(dpy->lock_fns == NULL)
+		return -1;
+    mutex_createopen(&dpy->lock);
+    dpy->lock_fns->lock_display = _XLockDisplay;
+    dpy->lock_fns->unlock_display = _XUnlockDisplay;
+
+    mutex_createopen(&i18n_lock);
+    _Xi18n_lock = &i18n_lock;
+    _XLockMutex_fn = _XLockMutex;
+    _XUnlockMutex_fn = _XUnlockMutex;
+    _XCreateMutex_fn = _XCreateMutex;
+    _XFreeMutex_fn = _XFreeMutex;
+    return 0;
+}
 
 Display *newdisplay() {
 	register Display *dpy;		/* New Display object being created. */
@@ -16,12 +76,13 @@ Display *newdisplay() {
 	int format;
 	long nitems, bytes;
 	unsigned char *prop;
-	EB_Resource *root;
+	Window root;
     XGCValues values;
 	LONG res[2];
 	HPS hps;
 	HDC hdc;
 
+	Daemon_getPMHandle(process, NULL);
 	hps = WinGetScreenPS(HWND_DESKTOP);
 	hdc = GpiQueryDevice(hps);
 	DevQueryCaps(hdc, CAPS_HORIZONTAL_RESOLUTION, 2, res);
@@ -36,7 +97,7 @@ Display *newdisplay() {
 	dp = Xmalloc(sizeof(Depth));
 
     sp->display	    = dpy;
-   	sp->root 	    = (Window)root;
+   	sp->root 	    = root;
     sp->cmap 	    = 1;
    	sp->white_pixel = values.background;
     sp->black_pixel = values.foreground;
@@ -82,6 +143,7 @@ Display *newdisplay() {
 	dpy->nformats		= sizeof(screenFormats) / sizeof(ScreenFormat);
 	dpy->pixmap_format = screenFormats;
 	dpy->vnumber = X_PROTOCOL;
+	dpy->synchandler = NULL;
 	dpy->release 		= VENDOR_RELEASE;
 	/* Set up the input event queue and input event queue parameters. */
 	dpy->head = dpy->tail = NULL;
@@ -95,23 +157,25 @@ Display *newdisplay() {
 	dpy->screens = sp;
 	dpy->motion_buffer	= 0; // TODO? setup->motionBufferSize;
 	dpy->flags		= 0;
-	dpy->min_keycode	= 0; // TODO -> Xlib_Keyboard.c
-	dpy->max_keycode	= 0; // TODO -> Xlib_Keyboard.c
-	dpy->keysyms		= (KeySym *)NULL;
+
+	_XInitKeyMapping();
+	dpy->min_keycode = _XminKeyCode;
+	dpy->max_keycode = _XmaxKeyCode;
+	dpy->keysyms = _XkeyMap;
+	dpy->keysyms_per_keycode = 4;
+	dpy->mode_switch = Mod1Mask;
+
 	dpy->modifiermap	= NULL;
-	dpy->keysyms_per_keycode = 0;
 	dpy->xdefaults		= (char *)NULL;
 	dpy->scratch_buffer	= NULL;
 	dpy->scratch_length	= 0L;
 	dpy->ext_number 	= 0;
 	dpy->ext_procs		= (_XExtension *)NULL;
 	dpy->lock_meaning	= NoSymbol;
-	dpy->lock		= NULL;
-	dpy->lock_fns		= NULL;
+	_XInitDisplayLock(dpy);
 	dpy->key_bindings	= NULL;
 	dpy->cursor_font	= None;
 	dpy->atoms		= NULL;
-	dpy->mode_switch = 0; // TODO
 	dpy->num_lock = 0; // TODO
 	dpy->context_db		= NULL;
 	dpy->cms.defaultCCCs	= NULL;
@@ -126,9 +190,8 @@ Display *newdisplay() {
 	dpy->conn_watchers	= NULL;
 	dpy->watcher_count	= 0;
 	dpy->filedes		= NULL;
-	dpy->xkb_info		= NULL;
 
-	XGetWindowProperty(dpy, (Window)root, XA_RESOURCE_MANAGER, 0, 100000000,
+	XGetWindowProperty(dpy, root, XA_RESOURCE_MANAGER, 0, 100000000,
 			False, XA_STRING, &type, &format, &nitems, &bytes, &prop);
 	if(nitems >= 0)
 		dpy->xdefaults = prop;
@@ -143,9 +206,11 @@ Display *newdisplay() {
  	return(dpy);
 }
 
+#if 0
 char *XDisplayName(_Xconst char* display) {
 	return("everblue/localhost:0.0");
 }
+#endif
 
 void freeDisplay(Display *dpy) {
 	Xfree(dpy->screens->root_visual);

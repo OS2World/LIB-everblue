@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/ParseCmd.c,v 1.6 2003/11/17 22:20:08 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ParseCmd.c,v 1.5 2001/12/14 19:54:03 dawes Exp $ */
 
 /* XrmParseCommand()
 
@@ -57,6 +57,9 @@ SOFTWARE.
    other options appearing before the longer version in the table.
 */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include "Xlibint.h"
 #include <X11/Xresource.h>
 #include <stdio.h>

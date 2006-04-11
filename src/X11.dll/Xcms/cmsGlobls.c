@@ -32,8 +32,11 @@
  *
  *
  */
-/* $XFree86: xc/lib/X11/cmsGlobls.c,v 1.5 2003/04/13 19:22:20 dawes Exp $ */
+/* $XFree86: xc/lib/X11/cmsGlobls.c,v 1.4 2001/01/17 19:41:51 dawes Exp $ */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include "Xlibint.h"
 #include "Xcmsint.h"
 #include "Cv.h"

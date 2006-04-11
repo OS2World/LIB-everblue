@@ -2,6 +2,49 @@
 
 extern long const _Xevent_to_mask[];      
 
+/* _XReadEvents - Flush the output queue,
+ * then read as many events as possible (but at least 1) and enqueue them
+ */
+void _XReadEvents(
+	register Display *dpy)
+{
+	DBUG_ENTER("_XReadEvents")
+	// TODO allow event write (partial unlock)
+	while(!dpy->qlen)
+		XNoOp(dpy); // TODO polling -> select
+	// TODO disallow event write (partial lock)
+	DBUG_VOID_RETURN;
+}
+
+
+/*
+ * _XDeq - Remove event packet from the display's queue.
+ */
+void _XDeq(
+    register Display *dpy,
+    register _XQEvent *prev,	/* element before qelt */
+    register _XQEvent *qelt)	/* element to be unlinked */
+{
+	DBUG_ENTER("_XDeq")
+	XEvent *dummy;
+	read(dpy->fd, (char *)&dummy, sizeof(void *));
+
+    if (prev) {
+	if ((prev->next = qelt->next) == NULL)
+	    dpy->tail = prev;
+    } else {
+	/* no prev, so removing first elt */
+	if ((dpy->head = qelt->next) == NULL)
+	    dpy->tail = NULL;
+    }
+    qelt->qserial_num = 0;
+    qelt->next = dpy->qfree;
+    dpy->qfree = qelt;
+    dpy->qlen--;
+printf("\n   event type: %x", qelt->event.type);
+	DBUG_VOID_RETURN;
+}
+
 /* 
  * I don't think passing the pointers throught the pipe
  * is a good idea, considering the code for peeking and
@@ -12,6 +55,7 @@ extern long const _Xevent_to_mask[];
  */
 
 
+#if 0
 int XNextEvent(Display *display, XEvent *event)
 {
 	DBUG_ENTER("XNextEvent")
@@ -40,15 +84,8 @@ int XNextEvent(Display *display, XEvent *event)
 int XPending(Display *display)
 {
 	DBUG_ENTER("XPending")
-/*	struct timeval tv = { 0, 0 };
-	fd_set readables;*/
-
-	/*FD_ZERO(&readables);
-	FD_SET(display->fd, &readables);
-	select(display->fd+1, &readables, NULL, NULL, &tv);
-	DBUG_RETURN(FD_ISSET(display->fd, &readables));
-	DBUG_RETURN(EventQueue?1:0);*/
-	DBUG_RETURN(XEventsQueued(display, QueuedAfterFlush));
+	int ret = XEventsQueued(display, QueuedAfterFlush);
+	DBUG_RETURN(ret);
 }
 
 int XPeekEvent(Display *display, XEvent *event_return) {
@@ -70,7 +107,7 @@ int XPutBackEvent(Display *display, XEvent *event)
 	DBUG_ENTER("XPutBackEvent")
 	EB_Resource *tmp;
 
-  	mutex_lock(event_lock, TRUE);
+  	mutex_lock(event_lock, FALSE);
 
 	/* Add the event to the top of the list */
 	tmp = Xmalloc(sizeof(EB_Resource));
@@ -83,8 +120,6 @@ int XPutBackEvent(Display *display, XEvent *event)
 	mutex_unlock(event_lock);
 	DBUG_RETURN(True);
 }
-
-#if 0
 
 Bool XCheckWindowEvent(Display *display, Window w, long event_mask, XEvent *event_return)
 {
@@ -281,27 +316,29 @@ Status XSendEvent(Display *display, Window w, Bool propagate,
 int XSelectInput(Display *display, Window w, long event_mask)
 {
 	DBUG_ENTER("XSelectInput")
-	DBUG_RETURN(Daemon_addEventMask(w, process, event_mask));
+	int ret = Daemon_addEventMask(w, process, event_mask);
+	DBUG_RETURN(ret);
 }
 
 /* Mode parameter appears to have no use on OS/2 since we cannot
  * flush the connection and see if there are more events.
  */
-int XEventsQueued(Display *display, int mode)
+int _XEventsQueued(Display *display, int mode)
 {
-	DBUG_ENTER("XEventsQueued")
 	int qlen;
 
 	if(!display)
-		DBUG_RETURN(0);
+		return 0;
 	XFlush(display);
 //	mutex_lock(event_lock);
 	qlen = display->qlen;
 //	mutex_unlock(event_lock);
-	if(!qlen)
-		XNoOp(display);
-	DBUG_RETURN(qlen);
+//	if(!qlen)
+//		XNoOp(display);
+	return qlen;
 }
+
+#if 0
 
 int XIfEvent (Display *display, XEvent *event_return, Bool (*predicate)(Display *display, XEvent *event, XPointer arg), XPointer arg) {
 	DBUG_ENTER("XIfEvent")
@@ -309,7 +346,7 @@ int XIfEvent (Display *display, XEvent *event_return, Bool (*predicate)(Display 
 	EB_Resource *current = ebproc->event_queue;
 
 	while(1) {
-		mutex_lock(event_lock, TRUE);
+		mutex_lock(event_lock, FALSE);
 		if(current)
 			while((current = current->next)) {
 				if((*predicate)(display, current->xevent, arg)) {
@@ -326,8 +363,6 @@ int XIfEvent (Display *display, XEvent *event_return, Bool (*predicate)(Display 
 			XNoOp(display);
 	}	
 }
-
-#if 0
 
 int XPeekIfEvent (display, event, predicate, arg)
 	register Display *display;

@@ -9,7 +9,7 @@ FONTMETRICS *Xlib_LoadFont(char* name, EB_Font *ebfont) {
 	EB_FontHints *hints = NULL;
 	FONTMETRICS *pfm, *cpfm, *npfm;
 
-//	printf("Loading %s\n", name);
+	printf(" Loading %s", name);
 	if (name)
 		strcpy(pattern, (char*)name);
 	else
@@ -34,6 +34,7 @@ FONTMETRICS *Xlib_LoadFont(char* name, EB_Font *ebfont) {
 
 	/* Now, we go through the available fonts */
 
+	Daemon_getPMHandle(process, NULL);
 	hps = WinGetScreenPS(HWND_DESKTOP);
 	hints = Xlib_ParseFontHints(hps, pattern, plen);
 
@@ -48,17 +49,16 @@ FONTMETRICS *Xlib_LoadFont(char* name, EB_Font *ebfont) {
 	for (lTemp = 0; lTemp < cFonts; lTemp++, cpfm++) {
 		tmp = RenderFontName(cpfm, tempname, hints, ebfont);
 		if(PatternMatch(pattern, plen, tempname, tmp-1)) {
-//printf("Found: %s\n", tempname);
 			npfm = Xmalloc(sizeof(FONTMETRICS));
 			memcpy(npfm, cpfm, sizeof(FONTMETRICS));
 			Xfree(pfm);
 			if(hints)
 				Xfree(hints);
-			/*fprintf(stderr,"Pattern matches font '%s'\n",tempname);*/
+			fprintf(stderr,"Pattern matches font '%s'\n",tempname);
 			DBUG_RETURN(npfm);
 		}
 	}
-	/*fprintf(stderr,"No font from %d matched pattern!\n",cFonts);*/
+//	fprintf(stderr,"No font from %d matched pattern!\n",cFonts);
 	Xfree(pfm);
 	if(hints)
 		Xfree(hints);
@@ -150,7 +150,22 @@ static XFontStruct *_XQueryFont(register Display *dpy, XID fid, FONTMETRICS *pfm
 	DBUG_ENTER("_XQueryFont")
 	register XFontStruct *fs = Xmalloc(sizeof(XFontStruct));
 	register FONTMETRICS *fm = pfm?pfm:Xmalloc(sizeof(FONTMETRICS));
-	EB_Font *font = getResource(EBFONT, fid);
+
+	EB_Font *font;
+	EB_GContext *ebgc;
+	EB_Resource *fontres = (EB_Resource *)fid;
+	switch(fontres->restype) {
+	case EBFONT:
+	    font = getResource(EBFONT, fid);
+		break;
+	case EBGCONTEXT:
+		ebgc = (EB_GContext *)getResource(EBGCONTEXT, fid);
+		font = getResource(EBFONT, ebgc->xgc.values.font);
+		break;
+	default:
+		font = NULL;
+	}
+
 	HPS hps = NULLHANDLE;
 	
 	if(!fid || !fm) {
@@ -160,8 +175,10 @@ static XFontStruct *_XQueryFont(register Display *dpy, XID fid, FONTMETRICS *pfm
 		DBUG_RETURN(0);
 	}
 
+	Daemon_getPMHandle(process, NULL);
 	hps = WinGetScreenPS(HWND_DESKTOP);
 	GpiCreateLogFont(hps, NULL, 1, &font->fattrs);
+	
 	GpiSetCharSet(hps, 1);
 	if(font->psmode)
 		GpiSetCharBox(hps, &font->sizef);
@@ -193,7 +210,8 @@ static XFontStruct *_XQueryFont(register Display *dpy, XID fid, FONTMETRICS *pfm
 	fs->ascent = fs->max_bounds.ascent;
 	fs->descent = fs->max_bounds.descent;
 
-	GpiDeleteSetId(hps,1);
+	GpiSetCharSet(hps, LCID_DEFAULT);
+	GpiDeleteSetId(hps, 1);
 	WinReleasePS(hps);
 	if(!pfm)
 		Xfree(fm);
@@ -211,7 +229,7 @@ XFontStruct *XLoadQueryFont(Display* dpy, _Xconst char* name) {
 		addResource(&process->ebprocess->res, ebres);
 		XFontStruct *xfs = _XQueryFont(dpy, (XID)ebres, pfm);
 		Xfree(pfm);
-		/*fprintf(stderr,"Font %x loaded '%s'\n",ebf, name);*/
+//		fprintf(stderr,"Font %x loaded '%s'\n",ebf, name);
 		DBUG_RETURN(xfs);
 	}
 	sfree(ebf);
@@ -232,11 +250,22 @@ Font XLoadFont(Display* dpy, _Xconst char* name) {
 		EB_Resource *fontres;
 
 		Xfree(pfm);
-		/*fprintf(stderr, "Font %x loaded '%s'\n", (Font)font, name);*/
+//		fprintf(stderr, "Font %x loaded '%s'\n", (Font)font, name);
 		fontres = createResource(EBFONT, font);
 		addResource(&process->ebprocess->res, fontres);
 		DBUG_RETURN((Font)fontres);
 	}
 	Xfree(font);
 	DBUG_RETURN((Font)0);
+}
+
+XFontStruct *XQueryFont(register Display *dpy, Font fid) {
+    DBUG_ENTER("XQueryFont")
+    XFontStruct *font_result = NULL;
+
+    LockDisplay(dpy);
+    font_result = _XQueryFont(dpy, fid, NULL);
+    UnlockDisplay(dpy);
+    SyncHandle();
+    DBUG_RETURN(font_result);
 }

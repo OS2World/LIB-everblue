@@ -1,6 +1,7 @@
 #include "x11daemon.h"
 
 MRESULT EXPENTRY brdrwndproc(HWND hWnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
+	mutex_lock(global_lock, FALSE);
 	fprintf(logfile, "Processing border event: %x\n", (int)msg);
 	fflush(logfile);
 	switch(msg) {
@@ -27,6 +28,7 @@ MRESULT EXPENTRY brdrwndproc(HWND hWnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 			*color = WinQuerySysColor(HWND_DESKTOP, SYSCLR_WINDOWFRAME, 0);
 		WinFillRect(hps, &rcl, *color);
 		WinEndPaint(hps);
+		mutex_unlock(global_lock);
 		return(0);
 	}
 	case WM_PRESPARAMCHANGED:
@@ -52,5 +54,6 @@ MRESULT EXPENTRY brdrwndproc(HWND hWnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 	}
 	fprintf(logfile, "...finished (%x)\n", (int)WinGetLastError(pmctls_hab));
 	fflush(logfile);
+	mutex_unlock(global_lock);
 	return WinDefWindowProc(hWnd, msg, mp1, mp2);
 }

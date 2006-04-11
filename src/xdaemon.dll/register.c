@@ -26,7 +26,7 @@ EXPENTRY BOOL Daemon_xinitialized(HAB hab, HWND mainhwnd) {
 
 	realdesktop = WinQueryDesktopWindow(hab, NULLHANDLE);
 	objwindow = mainhwnd;
-	installhooks(hab);
+	installhooks(hab, mainhwnd);
 	phase = 3;
 	mutex_unlock(global_lock);
 	return TRUE;
@@ -41,8 +41,9 @@ EXPENTRY BOOL Daemon_shutdown(HAB hab) {
 		return FALSE;
 	}
 
-	releaseReadAccess(&xeventsem);
 	releasehooks(hab);
+	xeventsem.finish = TRUE;
+	releaseReadAccess(&xeventsem);
 
 	if(current)
 		while((current = current->next)) {
@@ -83,7 +84,7 @@ EXPENTRY Bool Daemon_getProcess(EB_Resource **procres) {
 	}
 
 	mutex_unlock(global_lock);
-	Daemon_getPMHandle(*procres, NULL, NULL);
+	Daemon_getPMHandle(*procres, NULL);
 	mutex_lock(global_lock, FALSE);
 	addResource(&processlist, *procres);
 	mutex_unlock(global_lock);

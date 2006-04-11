@@ -32,8 +32,11 @@
  *		adjustment of color specifications in the CIE CIELuv.color
  *		space.
  */
-/* $XFree86: xc/lib/X11/LuvWpAj.c,v 1.2 2003/04/13 19:22:17 dawes Exp $ */
+/* $XFree86$ */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include "Xlibint.h"
 #include "Xcmsint.h"
 #include "Cv.h"

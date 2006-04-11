@@ -1,5 +1,6 @@
 /*
  * $Xorg: ErrDes.c,v 1.4 2001/02/09 02:03:32 xorgcvs Exp $
+ * $XdotOrg: xc/lib/X11/ErrDes.c,v 1.6 2005/05/13 22:53:43 sandmann Exp $
  */
 
 /***********************************************************
@@ -48,15 +49,22 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/ErrDes.c,v 3.12 2003/11/17 22:20:06 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ErrDes.c,v 3.11 2003/08/06 14:03:59 eich Exp $ */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include "Xlibint.h"
 #include <X11/Xos.h>
 #include "Xresource.h"
 #include <stdio.h>
 
 #ifndef ERRORDB
+#ifndef XERRORDB
 #define ERRORDB "/usr/lib/X11/XErrorDB"
+#else
+#define ERRORDB XERRORDB
+#endif
 #endif
 
 /*
@@ -146,9 +154,17 @@ XGetErrorDatabaseText(
 	   mutex unlocked. */
 	XrmDatabase temp_db;
 	int do_destroy;
+	const char *dbname;
 
 	XrmInitialize();
-	temp_db = XrmGetFileDatabase(ERRORDB);
+#ifdef WIN32
+	dbname = getenv("XERRORDB");
+	if (!dbname)
+	    dbname = ERRORDB;
+#else
+    dbname = ERRORDB;
+#endif
+	temp_db = XrmGetFileDatabase(dbname);
 
 	_XLockMutex(_Xglobal_lock);
 	if (!db) {
@@ -165,7 +181,7 @@ XGetErrorDatabaseText(
     if (db)
     {
 	tlen = strlen (name) + strlen (type) + 2;
-	if (tlen <= BUFSIZE)
+	if (tlen <= sizeof(temp))
 	    tptr = temp;
 	else
 	    tptr = Xmalloc (tlen);

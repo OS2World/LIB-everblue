@@ -1,6 +1,7 @@
 #include "x11daemon.h"
 
 MRESULT EXPENTRY framewndproc(HWND hWnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
+	mutex_lock(global_lock, FALSE);
 	MRESULT result = (MRESULT)0;
 
 //	fprintf(logfile, "Processing framewnd event: %x\n", (int)msg);
@@ -78,5 +79,6 @@ MRESULT EXPENTRY framewndproc(HWND hWnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 	}
 //	fprintf(logfile, "...finished (%x)\n", (int)WinGetLastError(pmctls_hab));
 //	fflush(logfile);
+	mutex_unlock(global_lock);
 	return result;
 }

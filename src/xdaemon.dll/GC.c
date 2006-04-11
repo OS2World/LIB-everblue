@@ -61,7 +61,7 @@ USHORT JoinStyletoLineJoin[3] = {
 	LINEJOIN_BEVEL,		/* JoinBevel */
 };
 
-void setGCValues(EB_HPS *ebhps, XGCValues *newvalues, Bool force) {
+void setGCValues(EB_HPS *ebhps, XGCValues *newvalues, Drawable d, Bool force) {
 // TODO optimize?
 	XGCValues *oldvalues = &ebhps->current;
 	
@@ -83,12 +83,42 @@ void setGCValues(EB_HPS *ebhps, XGCValues *newvalues, Bool force) {
 		GpiSetLineWidthGeom(ebhps->hps, newvalues->line_width);
 	if(force || oldvalues->font != newvalues->font)
 		if(newvalues->font) {
-			GpiCreateLogFont(ebhps->hps, NULL, 1, &((EB_Font *)newvalues->font)->fattrs);
+			GpiSetCharSet(ebhps->hps, LCID_DEFAULT);
+			EB_Font *font = getResource(EBFONT, newvalues->font);
+			GpiCreateLogFont(ebhps->hps, NULL, 1, &font->fattrs);
 			GpiSetCharSet(ebhps->hps, 1);
-			if(((EB_Font *)newvalues->font)->psmode)
-				GpiSetCharBox(ebhps->hps, &((EB_Font *)newvalues->font)->sizef);
+			if(font->psmode)
+				GpiSetCharBox(ebhps->hps, &font->sizef);
 		} else {
 			GpiSetCharSet(ebhps->hps, LCID_DEFAULT);
+		}
+	if(force || oldvalues->clip_mask != newvalues->clip_mask)
+		if(newvalues->clip_mask) {
+			if(oldvalues->clip_mask)
+				if(((EB_Resource *)oldvalues->clip_mask)->restype == EBPIXMAP) {
+				} else {
+				}
+			if(((EB_Resource *)newvalues->clip_mask)->restype == EBRECTANGLES) {
+				EB_Rectangles *ebr = getResource(EBRECTANGLES, newvalues->clip_mask);
+
+				RECTL *rectl, *cp;
+				cp = rectl = alloca(sizeof(RECTL) * ebr->size);
+				XRectangle *rectangles = ebr->rectangles;
+				int i;
+				for(i = 0; i < ebr->size; i++, cp++, rectangles++) {
+					cp->xRight = (cp->xLeft = rectangles->x + newvalues->clip_x_origin) + rectangles->width;
+					cp->yTop = (cp->yBottom = rectangles->y + newvalues->clip_y_origin) + rectangles->height;
+				}
+
+				HRGN hrgn = GpiCreateRegion(ebhps->hps, ebr->size, rectl);
+				HRGN oldreg;
+				GpiSetClipRegion(ebhps->hps, hrgn, &oldreg);
+				if(oldreg) {
+					GpiDestroyRegion(ebhps->hps, oldreg);
+				}
+			} else {
+				fprintf(stderr, "ClipMask not implemented yet\n");
+			}
 		}
 	*oldvalues = *newvalues;
 }

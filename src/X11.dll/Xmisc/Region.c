@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ************************************************************************/
-/* $XFree86: xc/lib/X11/Region.c,v 1.10 2003/04/13 19:22:17 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Region.c,v 1.9 2002/06/04 22:19:57 dawes Exp $ */
 /*
  * The functions in this file implement the Region abstraction, similar to one
  * used in the X11 sample server. A Region is simply an area, as the name
@@ -72,9 +72,12 @@ SOFTWARE.
  * the y-x-banding that's so nice to have...
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include "Xlibint.h"
 #include "Xutil.h"
-#include "region.h"
+#include <X11/Xregion.h>
 #include "poly.h"
 
 #ifdef DEBUG
@@ -248,7 +251,7 @@ miSetExtents (
     }
     assert(pExtents->x1 < pExtents->x2);
 }
-#if 0
+
 int
 XSetRegion(
     Display *dpy,
@@ -278,7 +281,7 @@ XSetRegion(
     SyncHandle();
     return 1;
 }
-#endif
+
 int
 XDestroyRegion(
     Region r)

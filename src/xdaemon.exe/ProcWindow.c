@@ -1,6 +1,8 @@
 #include "x11daemon.h"
 
 MRESULT EXPENTRY xpmwndproc(HWND hWnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
+	mutex_lock(global_lock, FALSE);
+
 //	BOOL weakEvent = FALSE;
 	MRESULT result = (MRESULT)0;
 	Window windowres = getWindow(hWnd, FALSE, NULL);
@@ -18,6 +20,79 @@ MRESULT EXPENTRY xpmwndproc(HWND hWnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 
 		*oldRect = *newRect;
 		result = 0;
+		break;
+	}
+	case WM_SIZE: {
+		POINTL delta;
+		HENUM children;
+		HWND borderwin, childborderwin, winparent;
+		SWP border, childborder, swp, parent;
+
+		borderwin = WinQueryWindow(hWnd, QW_PARENT);
+		WinQueryWindowPos(hWnd, &swp);
+
+		winparent = WinQueryWindow(borderwin, QW_PARENT);
+		WinQueryWindowPos(borderwin, &border);
+		WinQueryWindowPos(winparent, &parent);
+
+		delta.x = SHORT1FROMMP(mp2) - SHORT1FROMMP(mp1);
+		if(delta.x & 0x8000)
+			delta.x |= 0xffff0000;
+		else
+			delta.x &= 0xffff;
+		delta.y = SHORT2FROMMP(mp2) - SHORT2FROMMP(mp1);
+		if(delta.y & 0x8000)
+			delta.y |= 0xffff0000;
+		else
+			delta.y &= 0xffff;
+fprintf(logfile, "deltag: %x <- %x x %x <- %x => %x x %x\n", SHORT1FROMMP(mp2), SHORT1FROMMP(mp1), SHORT2FROMMP(mp2), SHORT2FROMMP(mp1), delta.x, delta.y);
+fflush(logfile);
+		children = WinBeginEnumWindows(hWnd);
+		while((childborderwin = WinGetNextWindow(children))) {
+			HWND child = WinQueryWindow(childborderwin, QW_TOP);
+			Window childres = getWindow(child, FALSE, NULL);
+			EB_Window *ebwchild = getResource(EBWINDOW, childres);
+			SWP swp2;
+			int change = 0;
+			int mydeltax = 0;
+			int mydeltay = 0;
+
+			if(!ebwchild)
+				continue;
+			WinQueryWindowPos(child, &swp2);
+			WinQueryWindowPos(childborderwin, &childborder);
+			switch (ebwchild->win_gravity) {
+			case ForgetGravity:
+				WinShowWindow(child, FALSE);
+				continue;
+			case NorthWestGravity:
+			case NorthGravity:
+			case NorthEastGravity:
+			case StaticGravity:
+				mydeltay += delta.y / 2;
+			case WestGravity:
+			case CenterGravity:
+			case EastGravity:
+				mydeltay += delta.y - (delta.y / 2);
+				change++;
+			}
+			switch (ebwchild->win_gravity) {
+			case NorthEastGravity:
+			case EastGravity:
+			case SouthEastGravity:
+				mydeltax += delta.x / 2;
+			case NorthGravity:
+			case CenterGravity:
+			case SouthGravity:
+				mydeltax += delta.x - (delta.x / 2);
+				change++;
+			}
+fprintf(logfile, "delta: %x, %x -> %x, %x (%x -> %x)\n", delta.x, delta.y, mydeltax, mydeltay, childborder.y, childborder.y + mydeltay);
+fflush(logfile);
+			if(change)
+				WinSetWindowPos(childborderwin, 0, childborder.x + mydeltax, childborder.y + mydeltay, 0, 0, SWP_MOVE | SWP_NOREDRAW);
+		}
+		WinEndEnumWindows(children);
 		break;
 	}
 
@@ -64,45 +139,6 @@ MRESULT EXPENTRY xpmwndproc(HWND hWnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 		} else
 			WinDestroyWindow(WinQueryWindow(hWnd, QW_PARENT));
 		break;
-	case WM_SETFOCUS:
-	{
-		int type;
-		HWND pointerWindow;
-		POINTL ptl;
-		HWND other = LONGFROMMP(mp1);
-		HWND ancestor = hWnd;
-		HWND parent = WinQueryWindowULong(hWnd, QWP_PARENT);
-
-		while(!WinIsChild(other, ancestor = WinQueryWindowULong(ancestor, QWP_PARENT)) && ancestor != HWND_DESKTOP);
-		if (SHORT1FROMMP(mp2)==TRUE) {
-			/*x11_console_notice("FocusIn");*/
-			type = FocusIn;
-		} else {
-			/*x11_console_notice("FocusOut");*/
-			type = FocusOut;
-		}
-		new = Daemon_createEvent(&newq, hWnd, type);
-		new->xfocus.mode = NotifyNormal;
-		new->xfocus.detail = NotifyNonlinear;
-		Daemon_doEvent(newq, FocusChangeMask);
-		if(parent != ancestor)
-		{
-			new2 = Daemon_createEvent(&newq2, parent, type);
-			new2->xfocus.mode = NotifyNormal;
-			new2->xfocus.detail = NotifyNonlinearVirtual;
-			Daemon_recurseEvent(newq2, new2, FocusChangeMask, ancestor);
-		}
-		WinQueryMsgPos(pmctls_hab, &ptl);
-		pointerWindow = WinWindowFromPoint(hWnd, &ptl, TRUE);
-		if(pointerWindow && pointerWindow != hWnd)
-		{
-			new3 = Daemon_createEvent(&newq3, pointerWindow, type);
-			new3->xfocus.mode = NotifyNormal;
-			new3->xfocus.detail = NotifyPointer;
-			Daemon_recurseEvent(newq3, new3, FocusChangeMask, hWnd);
-		}
-		break;
-	}
 	case WM_ACTIVATE:
 		break;
 	case WM_MOVE:
@@ -172,110 +208,6 @@ MRESULT EXPENTRY xpmwndproc(HWND hWnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 		new2 = Daemon_createEvent(&newq2, WinQueryWindowULong(hWnd, QWP_PARENT), type);
 		new2->xunmap.window = HWNDFROMMP(mp1);
 		new2->xunmap.from_configure = FALSE;
-		Daemon_doEvent(newq2, SubstructureNotifyMask);
-		break;
-	}
-	case WM_SIZE:
-	{
-		POINTL delta;
-		HENUM children;
-		HWND borderwin, childborderwin, winparent;
-		SWP border, childborder, swp, parent;
-
-		if (!winattrib)
-			break;
-		borderwin = WinQueryWindow(hWnd, QW_PARENT);
-		WinQueryWindowPos(hWnd, &swp);
-
-// otherwise crashes with width/height = 0, when restoring
-// ConfigureEvents get invoked with WM_SIZE
-		if(swp.fl & SWP_HIDE)
-			break;
-
-		winparent = WinQueryWindowULong(hWnd, QWP_PARENT);
-		WinQueryWindowPos(borderwin, &border);
-		WinQueryWindowPos(winparent, &parent);
-
-		delta.x = swp.cx - winattrib->width;
-		delta.y = swp.cy - winattrib->height;
-		children = WinBeginEnumWindows(hWnd);
-		while ((childborderwin = WinGetNextWindow(children))) {
-			HWND child = WinQueryWindow(childborderwin, QW_TOP);
-			SWP swp2;
-			XWindowAttributes *chattrib = Daemon_getwinattrib(child,NULL);
-			int change = 0;
-			int mydeltax = 32768;
-			int mydeltay = 32768;
-
-			if (!chattrib) continue;
-			WinQueryWindowPos(child, &swp2);
-			WinQueryWindowPos(childborderwin, &childborder);
-			switch (chattrib->win_gravity) {
-			case ForgetGravity:
-				WinShowWindow(child, FALSE);
-				continue;
-			case NorthWestGravity:
-			case NorthGravity:
-			case NorthEastGravity:
-			case StaticGravity:
-				mydeltay += delta.y / 2;
-			case WestGravity:
-			case CenterGravity:
-			case EastGravity:
-				mydeltay += delta.y - (delta.y / 2);
-				change++;
-			}
-			switch (chattrib->win_gravity) {
-			case NorthEastGravity:
-			case EastGravity:
-			case SouthEastGravity:
-				mydeltax += delta.x / 2;
-			case NorthGravity:
-			case CenterGravity:
-			case SouthGravity:
-				mydeltax += delta.x - (delta.x / 2);
-				change++;
-			}
-			if(change)
-				WinPostMsg(mainhwnd, UM_DeltWindowPos, MPFROMHWND(childborderwin), MPFROM2SHORT(mydeltax, mydeltay));
-			new = Daemon_createEvent(&newq, child, GravityNotify);
-			new->xgravity.window = child;
-			new->xgravity.x = swp2.x + childborder.x;
-			new->xgravity.y = winattrib->height - swp2.y - childborder.y - 1;
-			Daemon_doEvent(newq, StructureNotifyMask);
-			new2 = Daemon_createEvent(&newq2, hWnd, GravityNotify);
-			new2->xgravity.window = child;
-			new2->xgravity.x = swp2.x + childborder.x;
-			new2->xgravity.y = winattrib->height - swp2.y - childborder.y - 1;
-			Daemon_doEvent(newq2, SubstructureNotifyMask);
-		}
-		WinEndEnumWindows(children);
-
-		new = Daemon_createEvent(&newq, hWnd, ConfigureNotify);
-		new->xconfigure.window = hWnd;
-		new->xconfigure.x = winattrib->x = border.x + swp.x;
-		new->xconfigure.y = winattrib->y = parent.cy - swp.y - border.y - swp.cy;
-		new->xconfigure.width = winattrib->width = SHORT1FROMMP(mp2);
-		new->xconfigure.height = winattrib->height = SHORT2FROMMP(mp2);
-		new->xconfigure.border_width = winattrib->border_width;
-//		if (attrib->wm_client_leader)
-//			new->xany.window = attrib->wm_client_leader;
-		new->xconfigure.override_redirect = winattrib->override_redirect;
-		new2 = Daemon_copyEvent(&newq2, newq);
-/*		Xlib_mutex_lock(evmutex);
-		if (attrib->lastconfigure)
-		{
-			memcpy(attrib->lastconfigure, new, sizeof(XEvent));
-			Xlib_mutex_unlock(evmutex);
-			sfree(newq);
-		}
-		else
-		{
-			attrib->lastconfigure = new;
-			Xlib_mutex_unlock(evmutex);
-*/			Daemon_doEvent(newq, StructureNotifyMask);
-//		}
-		new2->xconfigure.event = WinQueryWindowULong(hWnd, QWP_PARENT);
 		Daemon_doEvent(newq2, SubstructureNotifyMask);
 		break;
 	}
@@ -647,5 +579,6 @@ MRESULT EXPENTRY xpmwndproc(HWND hWnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 //	Xlib_PMWM_Handler1(&hWnd, &msg, &mp1, &mp2);
 	fprintf(logfile, "...finished (%x)\n", (int)WinGetLastError(pmctls_hab));
 	fflush(logfile);
+	mutex_unlock(global_lock);
 	return result;
 }

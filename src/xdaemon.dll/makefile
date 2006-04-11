@@ -31,13 +31,13 @@ DLLFLAGS=-Zomf -Zdll -Zmap -Zbin-files $(CFLAGS)
 
 ##################################################################
 
-HEADERS=daemondll.h ../Xlibint.h ../EBstruc.h ../EBmessage.h ../EBhook.h
+HEADERS=daemondll.h ../myXlibint.h ../EBstruc.h ../EBmessage.h ../EBhook.h
 
 LIB_RES=xdaemon.res
 XDLL_DLL=xdaemon.dll
 XDLL_DEF=xdaemon.def
 XDLL_OUT=xdaemon.lib
-DLLLIBS=-lsocket -lebhook
+DLLLIBS=-lsocket -lebhook -lX11
 
 XDLL_SRC=\
 	GC.c Drawable.c \
