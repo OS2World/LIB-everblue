@@ -91,6 +91,7 @@ int um_unmapWindow(Window w);
 int um_lowerWindow(Window w);
 int um_raiseWindow(Window w);
 int um_mapRaised(Window w);
+HPOINTER um_createPointer(UM_CreatePointer *args);
 
 HAB pmctls_hab;
 HMQ hmq;

@@ -27,6 +27,7 @@
 #define UM_LOWERWINDOW (WM_USER+19)
 #define UM_RAISEWINDOW (WM_USER+20)
 #define UM_MAPRAISED (WM_USER+21)
+#define UM_CREATEPOINTER (WM_USER+22)
 
 typedef struct {
 	Window parent;
@@ -78,3 +79,9 @@ typedef struct {
         Window          w, p;
         int             x, y;
 } UM_ReparentWindow;
+
+typedef struct {
+	int x, y;
+	Pixmap pointer;
+	Pixmap color;
+} UM_CreatePointer;

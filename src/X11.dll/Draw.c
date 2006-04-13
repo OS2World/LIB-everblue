@@ -30,22 +30,21 @@ int XFillPolygon(Display* display, Drawable d, GC gc, XPoint* points, int npoint
 	int relx = 0;
 	EB_HPS *ebhps = getCachedHPS(process, d, gc);
 
-	if(!points || ((poly.ulPoints = npoints)<2) || 
+	if(!points || ((poly.ulPoints = npoints) < 2) || 
 			!(poly.aPointl = alloca(sizeof(POINTL) * npoints)))
 		DBUG_RETURN(False);
 
-	for (i=0; i<npoints; i++) {
+	for(i = 0; i < npoints; i++) {
 		poly.aPointl[i].x = points[i].x + relx;
 		poly.aPointl[i].y = points[i].y + rely;
-		if(mode == CoordModePrevious)
-		{
+		if(mode == CoordModePrevious) {
 			relx = poly.aPointl[i].x;
 			rely = poly.aPointl[i].y;
 		}
 	}
 	GpiMove(ebhps->hps, &poly.aPointl[npoints-1]);
-	GpiBeginArea(ebhps->hps, BA_BOUNDARY | (gc->values.fill_rule == WindingRule ?
-			BA_WINDING : BA_ALTERNATE ));
+	GpiBeginArea(ebhps->hps, BA_NOBOUNDARY | (gc->values.fill_rule == WindingRule ?
+			BA_WINDING : BA_ALTERNATE ) | BA_EXCL);
 	GpiPolyLine(ebhps->hps, poly.ulPoints, poly.aPointl);
 	GpiEndArea(ebhps->hps);
 	finishedDrawing(d, ebhps);
@@ -113,16 +112,21 @@ int XFillArc(Display* display, Drawable d, GC gc, int x, int y,
 	arcparms.lR = arcparms.lS = 0L;
 	lPtCenter.x = x + (arcparms.lP = width / 2L);
 	lPtCenter.y = y + (arcparms.lQ = height / 2L);
-	if (angle2 < 0) {
+	// fix for GPIEnableYInversion
+	angle1 = -angle1;
+	angle2 = -angle2;
+	if(angle2 > 23040)
+		angle2 = 23040;
+	if(angle2 < -23040)
+		angle2 = -23040;
+	if(angle2 < 0) {
 		angle1 -= (angle2 = -angle2);
 		reverse = 1;
 	};	
-	while (angle1 < 0)
+	while(angle1 < 0)
 		angle1 += 23040;
-	/*fxStartAngle = MAKEFIXED(angle1 / 64,(angle1 % 64)<<10);
-	 *fxSweepAngle = MAKEFIXED(angle2 / 64,(angle2 % 64)<<10);*/
-	fxStartAngle = MAKEFIXED(angle1,0) / 64;
-	fxSweepAngle = MAKEFIXED(angle2,0) / 64;
+	fxStartAngle = MAKEFIXED(angle1, 0) / 64;
+	fxSweepAngle = MAKEFIXED(angle2, 0) / 64;
 
 	GpiSetLineType(ebhps->hps, LINETYPE_INVISIBLE);
 	GpiMove(ebhps->hps, &lPtCenter);
@@ -131,8 +135,8 @@ int XFillArc(Display* display, Drawable d, GC gc, int x, int y,
 	GpiQueryCurrentPosition(ebhps->hps, (PPOINTL)&lStartPt);
 	GpiSetLineType(ebhps->hps, LineStyletoLineType[gc->values.line_style]);
 
-	GpiBeginArea(ebhps->hps, BA_BOUNDARY | (gc->values.fill_rule == WindingRule ?
-			BA_WINDING : BA_ALTERNATE ));
+	GpiBeginArea(ebhps->hps, BA_NOBOUNDARY | (gc->values.fill_rule == WindingRule ?
+			BA_WINDING : BA_ALTERNATE ) | BA_EXCL);
 	GpiPartialArc(ebhps->hps, &lPtCenter, MAKEFIXED(1,0), fxStartAngle, fxSweepAngle);
 	GpiQueryCurrentPosition(ebhps->hps, (PPOINTL)&lEndPt);
 	if(gc->values.arc_mode == ArcPieSlice)
@@ -263,21 +267,25 @@ int XDrawArc(Display* display, Drawable d, GC gc, int x, int y,
 	arcparms.lR = arcparms.lS = 0L;
 	lPtCenter.x = x + (arcparms.lP = width / 2L);
 	lPtCenter.y = y + (arcparms.lQ = height / 2L);
+	// fix for GPIEnableYInversion
+	angle1 = -angle1;
+	angle2 = -angle2;
+	if(angle2 > 23040)
+		angle2 = 23040;
+	if(angle2 < -23040)
+		angle2 = -23040;
 	if(angle2 < 0) {
 		angle1 -= (angle2 = -angle2);
 		reverse = 1;
-	};	
+	};
 	while(angle1 < 0)
 		angle1 += 23040;
-	/*fxStartAngle = MAKEFIXED(angle1 / 64,(angle1 % 64)<<10);
-	 *fxSweepAngle = MAKEFIXED(angle2 / 64,(angle2 % 64)<<10);*/
-	fxStartAngle = MAKEFIXED(angle1,0)/64;
-	fxSweepAngle = MAKEFIXED(angle2,0)/64;
+	fxStartAngle = MAKEFIXED(angle1, 0) / 64;
+	fxSweepAngle = MAKEFIXED(angle2, 0) / 64;
 	GpiSetArcParams(ebhps->hps, (PARCPARAMS)&arcparms);
 
 	GpiSetLineType(ebhps->hps, LINETYPE_INVISIBLE);
-	GpiQueryCurrentPosition(ebhps->hps, (PPOINTL)&lStartPt);
-	GpiPartialArc(ebhps->hps, &lPtCenter, MAKEFIXED(1,0), fxStartAngle, MAKEFIXED(0,0));
+	GpiPartialArc(ebhps->hps, &lPtCenter, MAKEFIXED(1, 0), fxStartAngle, MAKEFIXED(0, 0));
 	GpiQueryCurrentPosition(ebhps->hps, (PPOINTL)&lStartPt);
 	GpiSetLineType(ebhps->hps, LineStyletoLineType[gc->values.line_style]);
 	GpiPartialArc(ebhps->hps, &lPtCenter, MAKEFIXED(1,0), fxStartAngle, fxSweepAngle);
