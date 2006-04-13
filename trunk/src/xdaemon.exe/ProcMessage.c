@@ -22,11 +22,16 @@ MRESULT EXPENTRY pmhwndproc(HWND hWnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 		Daemon_doTasks(um_freeResources);
 		break;
 	case UM_LOADPOINTER: {
+		// TODO Load OS/2 pointers?
 		HMODULE module;
 		DosQueryModuleHandle("xdaemon", &module);
 		result = (MRESULT)WinLoadPointer(HWND_DESKTOP, module, (int)mp1 + 0x1000);
 		break;
 	}
+	case UM_CREATEPOINTER:
+		result = (MRESULT)um_createPointer(PVOIDFROMMP(mp1));
+		sfree(PVOIDFROMMP(mp1));
+		break;
 	case UM_OPENHANDLES:
 		um_openHandles(PVOIDFROMMP(mp1));
 		break;

@@ -40,14 +40,14 @@ XDMN_SRC=\
 	UMMapWindow.c ProcFrame.c ProcHookmsg.c UMOpenPipe.c \
 	UMDestroyWindow.c UMFreeResources.c UMSetWindowPos.c \
 	UMCreateWindow.c ProcBorder.c InitializePM.c ProcMessage.c \
-	ShutDownPM.c xdaemon.c ProcWindow.c \
+	ShutDownPM.c xdaemon.c ProcWindow.c UMCreatePointer.c \
 	PMWM.c
 
 XDMN_OBJ=\
 	UMMapWindow$(EXT) ProcFrame$(EXT) ProcHookmsg$(EXT) UMOpenPipe$(EXT) \
 	UMDestroyWindow$(EXT) UMFreeResources$(EXT) UMSetWindowPos$(EXT) \
 	UMCreateWindow$(EXT) ProcBorder$(EXT) InitializePM$(EXT) ProcMessage$(EXT) \
-	ShutDownPM$(EXT) xdaemon$(EXT) ProcWindow$(EXT) \
+	ShutDownPM$(EXT) xdaemon$(EXT) ProcWindow$(EXT) UMCreatePointer$(EXT) \
 	PMWM$(EXT)
 
 ##################################################################

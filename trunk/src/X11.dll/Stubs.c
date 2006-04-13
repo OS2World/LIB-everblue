@@ -166,8 +166,6 @@ WEAKSTUB(XDrawText16)
 
 /// Pixmap/Cursor
 WEAKSTUB(XUndefineCursor)
-WEAKSTUB(XCreatePixmapCursor)
-WEAKSTUB(XCreateGlyphCursor)
 WEAKSTUB(XRecolorCursor)
 WEAKSTUB(XSetAfterFunction)
 WEAKSTUB(XSetInputFocus)

@@ -74,7 +74,7 @@ if(depth > 1) {
 	GpiBitBlt(dst_hps, from, 3, aptl, (GXtoROPMode[gc->values.function] & 0xf0) | 0x0A, 0);
 	UnlockDisplay(dpy);
 
-	finishedDrawing(src_drawable, src_ebhps);
+	finishedDrawing(dst_drawable, dst_ebhps);
 	mutex_unlock(global_lock);
 
 // GraphicsExpose must be implemented with WinQueryVisibleRegion!!!

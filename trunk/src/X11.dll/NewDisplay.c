@@ -174,7 +174,7 @@ Display *newdisplay() {
 	dpy->lock_meaning	= NoSymbol;
 	_XInitDisplayLock(dpy);
 	dpy->key_bindings	= NULL;
-	dpy->cursor_font	= None;
+	dpy->cursor_font	= 1;
 	dpy->atoms		= NULL;
 	dpy->num_lock = 0; // TODO
 	dpy->context_db		= NULL;
