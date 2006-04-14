@@ -42,6 +42,8 @@ void _XDeq(
     dpy->qfree = qelt;
     dpy->qlen--;
 printf("\n   event type: %x", qelt->event.type);
+	if(&qelt->event != dummy)
+		fprintf(stderr, "Pipe out of sync: queue %x (%ld), pipe %x (%ld)\n", &qelt->event, qelt->event.type, dummy, dummy->type);
 	DBUG_VOID_RETURN;
 }
 

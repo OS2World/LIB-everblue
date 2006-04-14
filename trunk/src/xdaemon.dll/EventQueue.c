@@ -30,7 +30,8 @@ EXPENTRY void Daemon_addEvent(_XQEvent *newq, EB_Resource *procres, Bool copy) {
 	display->qlen++;
 	XUnlockDisplay(display);
 
-	write(process->pipeserver, (char *)&newq->event, sizeof(void *));
+	void *buffer = &newq->event;
+	write(process->pipeserver, (char *)&buffer, sizeof(void *));
 }
 
 EXPENTRY XEvent *Daemon_createEvent(register _XQEvent **newq, Window w, int type)

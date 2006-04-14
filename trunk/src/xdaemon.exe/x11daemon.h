@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <sys/fcntl.h>
 #define INCL_BASE
 #define INCL_GPI
 #define INCL_WIN
