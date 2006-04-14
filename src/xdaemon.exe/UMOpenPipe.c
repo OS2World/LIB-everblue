@@ -3,6 +3,7 @@
 void um_openHandles(EB_Resource *procres) {
 	if(procres) {
 		EB_Process *process = getResource(EBPROCESS, (XID)procres);
+		setmode(nextpipe, O_BINARY);
 		process->pipeserver = nextpipe;
 		event_createopen(&process->postsem, FALSE);
 	}
