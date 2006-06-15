@@ -1,0 +1,44 @@
+Hi Christian,
+hier frisch gezippt und getestet der aktuelle Snapshot.
+
+Es sind sogar weniger Dateien enthalten als im CVS / SVN, der
+Build-Prozess ist also wirklich eine Herausforderung.
+
+Versuche, ebhook.dll (Innotek libc) und emxhandl.dll (EMX) zum
+Kompilieren zu kriegen (die sind schîn klein und unkompliziert),
+dann stimmt schon mal dein Build-Environment.
+
+Der Rest ist nur intelligentes Kopieren und AbhÑngigkeiten beachten.
+
+
+Hier nochmals die genaue Anleitung ;-)
+
+install gcc v3.3.5 CSD 1
+copy make.exe 3.79.1 into gcc bin directory
+modify every eb_make.cmd to match path of gcc
+
+install emx build environment (e.g. with UnixOS/2) and 
+modify every eb_make2
+
+call eb_make2 in UTIL\MAKEKEYS.EXE
+   & copy ks_tables.h to X11.dll\XMISC
+call eb_make2 in EMXHANDL.DLL
+   & copy emxhandl.lib to X11.DLL
+
+call eb_make in EBHOOK.DLL
+   & copy ebhook.lib to XDAEMON.EXE, XDAEMON.DLL, X11.DLL
+call eb_make in XDAEMON.DLL
+   & copy xdaemon.lib to XDAEMON.EXE, X11.DLL
+call eb_make in XDAEMON.EXE
+call eb_make in X11.DLL\XCMS
+call eb_make in X11.DLL\XLIBI18N
+call eb_make in X11.DLL\XMISC
+call eb_make in X11.DLL
+
+(Als einzige zusÑtzliche Schwierigkeit, habe ich auch noch
+XDAEMON.DLL\X11.LIB rausgenommen.)
+Bei Fragen, gib einfach Bescheid.
+
+GrÅ·e,
+Sebastian
+

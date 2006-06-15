@@ -1,0 +1,20 @@
+
+- globale variablen per modul -> *.c
+Vorschlag Reihenfolge:
+ - extern Variablen
+ - .def exportierte Variablen
+ - exportierte Variablen fÅr andere .c Module in DLL/EXE/LIB
+ - globale Variablen fÅr dieses Modul (static!)
+
+
+- Funktionen eines Moduls
+   - an den Anfang des sources
+   - underscore vor dem Namen
+   - kein Prototyp in .c oder .h
+
+
+AhÑngigkeiten per DLL/EXE/LIB:
+- Hauptmodul.h includiert alle notwendigen Hedaer fÅr
+  die Sicht nach aussen und exportiert seine Funtkionen
+- Untermodule.h exporieren ihre Funktionen
+- Untermodule.ih exportieren  DLL/EXE/LIB internen Funktionen

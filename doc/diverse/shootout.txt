@@ -1,0 +1,8 @@
+gmake
+  - kein make -a
+  + VPATH
+  - kein error statement
+  + executes inference rules if exlicit depencency is
+    specified _without_ commands (nmake would ignore
+    the inference rule here)
+

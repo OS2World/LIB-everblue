@@ -1,0 +1,40 @@
+Voraussetzung:
+- ebhandl wird aufgelîst
+
+================================================================
+
+Typorientierte Struktur
+-----------------------
+gui
+   xdaemon (EXE)         [unÅbersichtlich wg. redundantem Namen]
+lib
+   X11
+   xdaemon (DLL)         [unÅbersichtlich wg. redundantem Namen]
+   ebhook
+
+vio
+   makekeys (EXE)
+
+include
+   X11R6  (header von X11)
+   common (kapselt eigene Version von Xlibint.h, Rest ist verteilt)
+
+================================================================
+
+Aufgabenorientierte Struktur
+----------------------------
+
+xdaemon
+   lib  (DLL)        [richtig!]
+   vio  (EXE)        [richtig!]
+   hook (ebhook)     [unsauber]
+
+x11
+
+util
+   makekeys (EXE)
+
+include
+   X11R6  (header von X11R6)
+   common (kapselt eigene Version von Xlibint.h, Rest ist verteilt)
+

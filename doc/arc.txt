@@ -1,0 +1,4 @@
+xdeamon\app
+  xdaemon.c
+    main()
+      - open logfile

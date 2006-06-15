@@ -1,0 +1,9 @@
+- link printf in xedaemon\app
+- test eblog
+
+- resolve  HMTX *_Xglobal_lock = &global_lock; ? EbQueryHookLockSem
+   lib\x11\XlibInt.c
+- eliminate global_lock in
+   xdaemon\lib\InitTerm.c
+   xdaemon\lib\register.c
+- move global_lock from ebhook.c to access.c
