@@ -1,0 +1,67 @@
+# --------------------------------------------------------
+# determine some filenames
+# --------------------------------------------------------
+
+CFG_TITLEFILE=$(BASEDIR_BS)\config\mktitle.ht
+CFG_HELPMAIN=$(BASEDIR_BS)\config\mkhelp.ht
+CFG_HELPTARGETS=$(BASEDIR_BS)\config\mktarget.ht
+CFG_HELPSYMBOL1=$(BASEDIR_BS)\config\mkgmake.ht
+CFG_HELPSYMBOL2=$(BASEDIR_BS)\config\mksymbol.ht
+
+CFG_GCCTYPESCRIPT=$(BASEDIR_BS)\bin\gccchk.cmd
+CFG_GCCTYPEFILE=$(CMPDIR_BS)\gccchk.inc
+
+# --------------------------------------------------------
+# on main level: show title
+# --------------------------------------------------------
+
+ifeq ($(MAKELEVEL), 0)
+$(shell cmd /c type $(CFG_TITLEFILE) $(TO_ERR))
+endif
+
+# --------------------------------------------------------
+# on main level: determine gcc version
+# --------------------------------------------------------
+
+ifeq ($(MAKELEVEL), 0)
+$(shell cmd /c $(CFG_GCCTYPESCRIPT) $(CFG_GCCTYPEFILE) $(TO_ERR))
+endif
+
+include $(CFG_GCCTYPEFILE)
+
+ifeq ($(MAKELEVEL), 0)
+$(shell cmd /c echo Compiling modules requiring GCC $(GCCVERSION) $(TO_ERR) & echo. $(TO_ERR))
+endif
+
+# --------------------------------------------------------
+# include configuration settings
+# --------------------------------------------------------
+
+-include $(BASEDIR)/config/config.in
+
+# --------------------------------------------------------
+# start/end message definitions
+# --------------------------------------------------------
+
+STARTMSG=***** $(DESCRIPTION) starts $(TO_ERR)
+ENDMSG=***** $(DESCRIPTION) ends $(TO_ERR)
+
+# --------------------------------------------------------
+# extend path with bin dir and $(BNDIR)
+# allows to execute own-compiled utilities
+# --------------------------------------------------------
+PATH:=$(BINDIR_BS);$(BASEDIR_BS)\bin;$(PATH)
+
+# --------------------------------------------------------
+# extend include path with compile dir
+# allows to include generate headers
+# --------------------------------------------------------
+C_INCLUDE_PATH:=$(CMPDIR);$(C_INCLUDE_PATH);$(BASEDIR)\src\include\common;$(BASEDIR)\src\lib\common;
+CPLUS_INCLUDE_PATH:=$(CMPDIR);$(CPLUS_INCLUDE_PATH);$(BASEDIR)\src\include\common;$(BASEDIR)\src\lib\common;
+
+# --------------------------------------------------------
+# extend library path with bin dir
+# allows to use generated libs
+# --------------------------------------------------------
+LIBRARY_PATH:=$(LIBRARY_PATH);$(BINDIR)
+

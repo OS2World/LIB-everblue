@@ -1,0 +1,24 @@
+LIBRARY EBHOOK INITINSTANCE TERMINSTANCE
+DESCRIPTION "Everblue PM Hook - OS/2 Netlabs Project"
+CODE
+	PRELOAD
+DATA
+	SINGLE SHARED
+STACKSIZE 1310720
+EXPORTS
+; hook functions
+	EbInstallHooks
+	EbReleaseHooks
+; access functions
+	EbWaitForHookAccess
+	EbGetHookAccess
+	EbReleaseHookAccess
+	EbGetHookDataAccess
+	EbReleaseHookDataAccess
+	EbSetHookShutdownState
+	EbQueryHookShutdownState
+; vars of ebhook.c
+	_global_lock
+	_msgparameter
+	_msgxchange
+	_returnvalue

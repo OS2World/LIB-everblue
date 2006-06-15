@@ -1,0 +1,93 @@
+====================================================
+
+Probleme:
+=========
+- generell:
+  - Fehleer bei Semaphore-Behandlung werden ignoriert
+
+
+- access.c:_forceWrite gibt TRUE zurÅck wenn
+
+  A) fFinish = TRUE (war das nicht das Shutdown-Flag ?) oder
+     hookhab == NULLHANDLE
+   ==> das mÅsste doch FALSE zurÅckgeben ????
+  B) bei fÅnf Versuchen a 50ms hevWriteAccess frei wird
+
+ ansonsten wird der owner gekillt, wenn er gleich geblieben ist
+
+- sem.c:EbLockMutexSem bzw:
+  mutex.c:mutex_lock mit Parameter force==FALSE
+  while-Schleife wird nach einem Durchlauf immer abgebrochen
+
+  alt:
+
+     EXPENTRY VOID mutex_lock(HMTX mutex, BOOL force) {
+             while(DosRequestMutexSem(mutex, 300) == 640 && force)
+                     _killBadProcess();
+     }
+
+  neu:
+     VOID EbLockMutexSem( HMTX hmtx) {
+        ULONG ulRetries = MUTEXLOCK_RETRIES;
+        while ((DosRequestMutexSem( hmtx, MUTEXLOCK_WAIT) == ERROR_TIMEOUT ) &&
+           (ulRetries))
+           ulRetries--;
+        return;
+     }
+
+################################################################################
+
+003
+===
+
+- BOOL als Returnwert hinzugefÅgt:
+  - zu allen sem Funktionen
+  - zu ebhook
+     - access.c: EbHookInitializeAccess, EbHookGetReadAccess
+     - ebhook.c: EbGetHookAccess EbGetHookDataAccess
+
+- Auswertung der neuen RÅckgabewerte
+  - ebhook:ebhook.c:_DLL_InitTerm:
+     return EbHookInitializeAccess();
+
+  - xdaemon\lib
+    - InitTerm.c
+    - message.c: CHECK !!! RÅckgabewert ok, wenn lock nicht erhÑltlich war ?
+    - register.c: alle Funktionen
+
+################################################################################
+
+002
+===
+
+- weitere Anpassungen an neues API
+- test sample hinzugefÅgt
+- test.exe lÑdt hook, bricht dann ab
+
+
+################################################################################
+
+001
+===
+
+common.lib
+----------
+EbCreateOpenMutexSem      - mutex_createopen
+EbCloseMutexSem           - mutex_close
+EbLockMutexSem            - mutex_lock
+EbReleaseMutexSem         - mutex_unlock
+EbCreateOpenEventSem      - event_createopen
+EbCloseEventSem           - event_close
+EbKillMutexSemOwner       - called by EbWaitForHookAccess
+                              formerly part of mutex_lock(hmtx, true
+
+ebhook.dll
+----------
+EbWaitForHookAccess       - mutex_lock hmtx, true
+
+EbGetHookAccess           - mutex_lock hmtx, false
+EbReleaseAccess           - mutex_unlock
+
+EbGetHookDataAccess       - getReadAccess
+EbReleaseHookDataAccess   - releaseReadAccess
+

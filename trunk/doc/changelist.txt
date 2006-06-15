@@ -1,0 +1,124 @@
+
+\*.h -> src\include\common
+==========================
+- EBdebug.h verschoben
+- myXlibint.h verschoben
+   énderung Zeile 674 behebt warnings bezgl. Parameter 1 von __XOS2RedirRoot:
+     alt: extern char* __XOS2RedirRoot( char* );
+     neu: extern char* __XOS2RedirRoot( const char* );
+   siehe lib\X11\os2.c
+
+emxhandl.dll -> src\lib\emxhandl
+================================
+- eb_make.cmd gelîscht
+- makefile umgestellt
+
+util\makekeys.exe -> src\util\makekeys
+======================================
+- eb_make.cmd gelîscht
+- makefile umgestellt
+- makekeys.def: NAME: changed WINDOWAPI to WINDOWCOMPAT
+
+
+ebhook.dll -> src\lib\ebhook
+============================
+- eb_make.cmd gelîscht
+- makefile umgestellt
+- EBhook.h: aus \ hinzugefÅgt
+- komplett Åberarbeitet
+  - gelîscht: ebhookdll.h
+  - globale Variablen Åberarbeitet: ebhook.c EBhook.h InitTerm.c makefile mutex.c
+  - Reihenfolge sortiert bzw weiter kommentiert: ebhook.def
+  - neu: mutex.h mutex.ih
+  - ebhook.c: Symbole USEAPPHOOK, HOOKEDQUEUE eingefÅhrt (Umschaltun System/AppHook)
+
+xdaemon.dll -> src\xdaemon\lib
+==============================
+- eb_make.cmd gelîscht
+- makefile umgestellt
+- daemondll.h
+    #include "../myXlibint.h" ->  #include "myXlibint.h"
+    #include <X11/Xutil.h>    ->  #include <X11/Xutil.h>
+    #include <X11/Xmu/Misc.h> ->  #include <X11/Xmu/Misc.h>
+    #include "../EBhook.h"    ->  #include "EBhook.h"
+    #include "../EBstruc.h"   ->  #include "EBstruc.h"
+    #include "../EBmessage.h" ->  #include "EBmessage.h"
+- register.c: startDaemon um Aufruf von DosSearchPath erweitert
+- xdaemon.c: Dummymodul hinzugefÅgt
+- xdaemon.def: Import hinzugefÅgt
+        _XUnlockDisplay     = X11.XUnlockDisplay
+
+xdaemon\app -> src\xdaemon\app
+==============================
+- eb_make.cmd gelîscht
+- makefile umgestellt
+- EBmessage.h EBstruc.h: aus \ hinzugefÅgt
+- x11daemon.h
+    #include "../myXlibint.h"  ->  #include "myXlibint.h"
+    #include "../EBstruc.h"    ->  #include "EBstruc.h"
+    #include "../EBmessage.h"  ->  #include "EBmessage.h"
+    #include "../EBhook.h"     ->  #include "EBhook.h"
+
+X11.dll\xcms -> lib\x11\xcms
+============================
+- eb_make.cmd gelîscht
+- makefile umgestellt
+- Xlib.h: mit Version aus XdotOrg
+- xcms.c: Dummymodul hinzugefÅgt
+- XlibInt.h:
+   #include "../../myXlibInt.h" -> #include "myXlibInt.h"
+
+
+X11.dll\xlibi18n -> lib\x11\xlibi18n
+====================================
+- eb_make.cmd gelîscht
+- makefile umgestellt
+- xlibi18n.c: Dummymodul hinzugefÅgt
+- XlibInt.h:
+   #include "../../myXlibInt.h" -> #include "myXlibInt.h"
+- lcRM.c: Zeile 157: warning: condition always true ...
+     --> wc ist ein _unsigned_ long, daher ist wc >= 0 immer wahr
+    alt: return (wc >= 0 && wc <= 0x7f ? wc : 0x7f);
+    neu: return (wc <= 0x7f ? wc : 0x7f);
+
+
+X11.dll\Xmisc -> lib\x11\Xmisc
+==============================
+- eb_make.cmd gelîscht
+- makefile umgestellt
+- Xlib.h: mit Version aus XdotOrg
+- Xmisc.c: Dummymodul hinzugefÅgt
+- XlibInt.h:
+   #include "../../myXlibInt.h" -> #include "myXlibInt.h"
+
+
+X11.dll -> lib\x11
+==================
+- eb_make.cmd gelîscht
+- makefile umgestellt
+- X11\Xlibint.h hinzugefÅgt
+- myImUtil.c:
+   #include "../myXlibint.h" -> #include "myXlibint.h"
+- Stubs.c:
+   #include "../EBdebug.h" -> #include "EBdebug.h"
+- x11.c: Dummymodul hinzugefÅgt
+- X11.h:
+   #include "../myXlibint.h" -> #include "myXlibint.h"
+   #include "../EBdebug.h"   -> #include "EBdebug.h"
+   #include "../EBstruc.h"   -> #include "EBstruc.h"
+   #include "../EBmessage.h" -> #include "EBmessage.h"
+   #include "../EBhook.h"    -> #include "EBhook.h"
+- Xlibint.h: hinzugefÅgt: Kopie aus xlibi18n
+- os2.c: énderung
+   alt: char *__XOS2RedirRoot( char *fname)
+   neu: char *__XOS2RedirRoot( const char *fname)
+     verhindert warnings bei X11 code in
+       NamedColor.c
+       Xmisc\RdBitF.c
+       Xmisc\WrBitF.c
+       Xmisc\Xrm.c
+       xlibi18n\lcDB.c
+       xlibi18n\lcFile.c
+     passt auch fÅr:
+       myXrm.c
+
