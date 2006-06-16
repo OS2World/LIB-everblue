@@ -412,7 +412,7 @@ static XrmDatabase NewDatabase(void)
 
     db = (XrmDatabase) Xmalloc(sizeof(XrmHashBucketRec));
     if (db) {
-	EbCreateOpenMutexSem(&db->linfo);
+	EbCreateMutexSem(&db->linfo);
 	db->table = (NTable)NULL;
 	db->mbstate = (XPointer)NULL;
 #ifdef _XP_PRINT_SERVER_
@@ -720,7 +720,7 @@ void XrmCombineDatabase(
 	    }
 	}
 	(from->methods->destroy)(from->mbstate);
-	EbCloseMutexSem(&from->linfo);
+	EbCloseMutexSem(from->linfo);
 	Xfree((char *)from);
 	EbReleaseMutexSem((*into)->linfo);
     }
@@ -2568,7 +2568,7 @@ void XrmDestroyDatabase(
 	    else
 		DestroyNTable(table);
 	}
-	EbCloseMutexSem(&db->linfo);
+	EbCloseMutexSem(db->linfo);
 	(*db->methods->destroy)(db->mbstate);
 	Xfree((char *)db);
     }

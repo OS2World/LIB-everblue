@@ -3,6 +3,7 @@
 #define ACCESS_H
 
 BOOL EbHookInitializeAccess( VOID);
+BOOL EbHookEnableAccess( VOID);
 VOID EbHookTerminateAccess( VOID);
 BOOL EbHookGetWriteAccess( BOOL fForce);
 VOID EbHookReleaseWriteAccess( VOID);

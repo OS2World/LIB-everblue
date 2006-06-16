@@ -32,11 +32,11 @@ static void _XUnlockMutex(_LockInfoRec *lip) {
 }
 
 static void _XCreateMutex(_LockInfoRec *lip) {
-	EbCreateOpenMutexSem(lip);
+	EbCreateMutexSem(lip);
 }
 
 static void _XFreeMutex(_LockInfoRec *lip) {
-    EbCloseMutexSem(lip);
+    EbCloseMutexSem(*lip);
 }
 
 static void _XUnlockDisplay(Display *dpy) {
@@ -54,11 +54,11 @@ static int _XInitDisplayLock(Display *dpy) {
     dpy->lock_fns = (struct _XLockPtrs*)Xmalloc(sizeof(struct _XLockPtrs));
     if(dpy->lock_fns == NULL)
 		return -1;
-    EbCreateOpenMutexSem(&dpy->lock);
+    EbCreateMutexSem(&dpy->lock);
     dpy->lock_fns->lock_display = _XLockDisplay;
     dpy->lock_fns->unlock_display = _XUnlockDisplay;
 
-    EbCreateOpenMutexSem(&i18n_lock);
+    EbCreateMutexSem(&i18n_lock);
     _Xi18n_lock = &i18n_lock;
     _XLockMutex_fn = _XLockMutex;
     _XUnlockMutex_fn = _XUnlockMutex;

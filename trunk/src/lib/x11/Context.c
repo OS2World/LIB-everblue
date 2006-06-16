@@ -88,7 +88,7 @@ static void _XFreeContextDB(display)
 	    }
 	}
 	Xfree((char *) db->table);
-	EbCloseMutexSem(&db->linfo);
+	EbCloseMutexSem(db->linfo);
 	Xfree((char *) db);
     }
     DBUG_VOID_RETURN;
@@ -144,7 +144,7 @@ int XSaveContext(display, rid, context, data)
 	    DBUG_RETURN(XCNOMEM);
 	}
 	db->numentries = 0;
-	EbCreateOpenMutexSem(&db->linfo);
+	EbCreateMutexSem(&db->linfo);
 #ifdef MOTIFBC
 	if (!display) *pdb = db; else
 #endif

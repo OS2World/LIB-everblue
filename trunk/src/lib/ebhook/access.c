@@ -54,10 +54,10 @@ static BOOL _forceWriteAccess( VOID) {
 BOOL EbHookInitializeAccess( VOID) {
 	ULONG ulError = 0;
 
-	ulError += !EbCreateOpenMutexSem( &global_lock);
-	ulError += !EbCreateOpenMutexSem( &hmtxAccess);
-	ulError += !EbCreateOpenEventSem( &hevReadAccess, TRUE);
-	ulError += !EbCreateOpenEventSem( &hevWriteAccess, FALSE);
+	ulError += !EbCreateMutexSem( &global_lock);
+	ulError += !EbCreateMutexSem( &hmtxAccess);
+	ulError += !EbCreateEventSem( &hevReadAccess, TRUE);
+	ulError += !EbCreateEventSem( &hevWriteAccess, FALSE);
 
 	if (ulError) {
 #if COMPILE_FPRINTF
@@ -71,11 +71,31 @@ BOOL EbHookInitializeAccess( VOID) {
 
 // -------------------------------------------------------------
 
+BOOL EbHookEnableAccess( VOID) {
+	ULONG ulError = 0;
+
+	ulError += !EbOpenMutexSem( global_lock);
+	ulError += !EbOpenMutexSem( hmtxAccess);
+	ulError += !EbOpenEventSem( hevReadAccess, TRUE);
+	ulError += !EbOpenEventSem( hevWriteAccess, FALSE);
+
+	if (ulError) {
+#if COMPILE_FPRINTF
+		fprintf(stderr, "ebhook: error: cannot enable hook access\n");
+#endif
+		EbHookTerminateAccess();
+	}
+
+	return (ulError == NO_ERROR);
+}
+
+// -------------------------------------------------------------
+
 VOID EbHookTerminateAccess( VOID) {
-	EbCloseMutexSem(&global_lock);
-	EbCloseMutexSem(&hmtxAccess);
-	EbCloseEventSem(&hevReadAccess);
-	EbCloseEventSem(&hevWriteAccess);
+	EbCloseMutexSem(global_lock);
+	EbCloseMutexSem(hmtxAccess);
+	EbCloseEventSem(hevReadAccess);
+	EbCloseEventSem(hevWriteAccess);
 }
 
 // -------------------------------------------------------------

@@ -11,15 +11,13 @@
 
 // -------------------------------------------------------------
 
-BOOL EbCreateOpenMutexSem( PHMTX phmtx) {
+BOOL EbCreateMutexSem( PHMTX phmtx) {
 	APIRET rc = NO_ERROR;
 
 	if (!phmtx)
 		rc = ERROR_INVALID_PARAMETER;
-	else if (!*phmtx)
-		rc = DosCreateMutexSem( NULL, phmtx, DC_SEM_SHARED, FALSE);
 	else
-		rc = DosOpenMutexSem( NULL, phmtx);
+		rc = DosCreateMutexSem( NULL, phmtx, DC_SEM_SHARED, FALSE);
 #if COMPILE_FPRINTF
 	if (rc)
 		fprintf(stderr, "error: open/create mutex semaphore, rc=%u\n", rc);
@@ -29,16 +27,23 @@ BOOL EbCreateOpenMutexSem( PHMTX phmtx) {
 
 // -------------------------------------------------------------
 
-BOOL EbCloseMutexSem( PHMTX phmtx) {
+BOOL EbOpenMutexSem( HMTX hmtx) {
 	APIRET rc = NO_ERROR;
-	PID  pid;
-	TID  tid;
-	ULONG ulCount;
 
-	if (!phmtx)
-		rc = ERROR_INVALID_PARAMETER;
-	else
-		rc = DosCloseMutexSem( *phmtx);
+	rc = DosOpenMutexSem( NULL, &hmtx);
+#if COMPILE_FPRINTF
+	if (rc)
+		fprintf(stderr, "error: open/create mutex semaphore, rc=%u\n", rc);
+#endif
+	return (rc == NO_ERROR);
+}
+
+// -------------------------------------------------------------
+
+BOOL EbCloseMutexSem( HMTX hmtx) {
+	APIRET rc = NO_ERROR;
+
+	rc = DosCloseMutexSem( hmtx);
 #if COMPILE_FPRINTF
 	if (rc)
 		fprintf(stderr, "error: cannot close mutex semaphore, rc=%u\n", rc);
@@ -78,14 +83,24 @@ BOOL EbReleaseMutexSem( HMTX hmtx) {
 
 // =============================================================
 
-BOOL EbCreateOpenEventSem( PHEV phev, BOOL fInitiallyPosted) {
+BOOL EbCreateEventSem( PHEV phev, BOOL fInitiallyPosted) {
 	APIRET rc = NO_ERROR;
 	if (!phev)
 		rc = ERROR_INVALID_PARAMETER;
-	else if (!*phev)
-		rc = DosCreateEventSem( NULL, phev, DC_SEM_SHARED, fInitiallyPosted);
 	else
-		rc = DosOpenEventSem( NULL, phev);
+		rc = DosCreateEventSem( NULL, phev, DC_SEM_SHARED, fInitiallyPosted);
+#if COMPILE_FPRINTF
+	if (rc)
+		fprintf(stderr, "error: cannot open/create event semaphore, rc=%u\n", rc);
+#endif
+	return (rc == NO_ERROR);
+}
+
+// =============================================================
+
+BOOL EbOpenEventSem( HEV hev) {
+	APIRET rc = NO_ERROR;
+	rc = DosOpenEventSem( NULL, &hev);
 #if COMPILE_FPRINTF
 	if (rc)
 		fprintf(stderr, "error: cannot open/create event semaphore, rc=%u\n", rc);
@@ -95,13 +110,9 @@ BOOL EbCreateOpenEventSem( PHEV phev, BOOL fInitiallyPosted) {
 
 // -------------------------------------------------------------
 
-BOOL EbCloseEventSem( PHEV phev) {
+BOOL EbCloseEventSem( HEV hev) {
 	APIRET rc = NO_ERROR;
-	ULONG ulPostCount;
-	if (!phev)
-		rc = ERROR_INVALID_PARAMETER;
-	else
-		rc = DosCloseEventSem( *phev);
+	rc = DosCloseEventSem( hev);
 #if COMPILE_FPRINTF
 	if (rc)
 		fprintf(stderr, "error: cannot close event semaphore, rc=%u\n", rc);
