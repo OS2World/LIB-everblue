@@ -70,21 +70,10 @@ EXPORTS
         freeOldHPS
         _stdgcvalues
 ; other functions
-        _Daemon_getatomname
-        _Daemon_xinternatom
-        _Daemon_purgegc
         _auto_repeat
         __XmaxKeyCode
         __XminKeyCode
         _Xlib_State
         __XQueryPointer
-        _Xlib_FreeAllAtoms
-        _Xlib_UnmonitorResource
-        _Xlib_set_data
-        _Xlib_get_data
-        _XDeleteProperty
-        XGetWindowAttributes2
-        Daemon_getwinattrib
-        _XGetWindowProperty
         getTid
         getPid
