@@ -39,8 +39,8 @@ EXPENTRY Display *XOpenDisplay(_Xconst char *displayname) {
 
 	ebproc->display->fd = open("\\PIPE\\EVERBLUE", O_RDONLY | O_BINARY);
 	EMXRegisterHandle(ebproc->display->fd);	
-	EbCreateOpenMutexSem(&ebproc->postmtx);
-	EbCreateOpenEventSem(&ebproc->postsem, FALSE);
+	EbCreateMutexSem(&ebproc->postmtx);
+	EbCreateEventSem(&ebproc->postsem, FALSE);
 
 	Daemon_exec(process, UM_OPENHANDLES, process);
 

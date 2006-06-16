@@ -32,6 +32,7 @@ volatile HAB hookhab = 0;
 
 // global vars of this module
 static HWND daemonhwnd;
+static BOOL created = FALSE;
 
 // -------------------------------------------------------------
 
@@ -39,7 +40,11 @@ unsigned long _DLL_InitTerm(unsigned long mod_handle, unsigned long flag) {
 	switch(flag) {
 		case 0:
 			hk_module = mod_handle;
-			return EbHookInitializeAccess();
+			if(!created) {
+				created = TRUE;
+				return EbHookInitializeAccess();
+			} else
+				return EbHookEnableAccess();
 		case 1:
 			EbHookTerminateAccess();
 			return 1;
