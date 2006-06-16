@@ -4,6 +4,11 @@ BOOL APIENTRY GpiEnableYInversion(HPS hps, LONG lHeight);
 
 void freeHPS(EB_Resource *hpsres2) {
 	if(hpsres2->ebhps->hdc) {
+		GpiSetBitmap(hpsres2->ebhps->hps, NULLHANDLE);
+		GpiDeleteBitmap(hpsres2->ebhps->hbm);
+		GpiAssociate(hpsres2->ebhps->hps, NULLHANDLE);
+		GpiDestroyPS(hpsres2->ebhps->hps);
+		DevCloseDC(hpsres2->ebhps->hdc);
 	} else
 		WinReleasePS(hpsres2->ebhps->hps);
 }
@@ -81,7 +86,6 @@ EXPENTRY void getDrawableGeometry(Drawable d, int *x, int *y, unsigned int *widt
 }
 
 EB_HPS *newCachedHPS(EB_Resource *procres, Drawable d) {
-	int height = getDrawableHeight(d);
 	HAB hab;
 	EB_HPS *ebhps = scalloc(1, sizeof(EB_HPS));
 	EB_Resource *hpsres1 = createResource(EBHPS1, NULL);
@@ -116,7 +120,6 @@ EB_HPS *newCachedHPS(EB_Resource *procres, Drawable d) {
 		addResource(&ebp->hpscache, hpsres1);
 	}
 
-	GpiEnableYInversion(ebhps->hps, height - 1);
 	GpiCreateLogColorTable(ebhps->hps, 0, LCOLF_RGB, 0, 0, NULL);
 	return ebhps;
 }
@@ -125,35 +128,29 @@ EXPENTRY EB_HPS *getCachedHPS(EB_Resource *procres, Drawable d, GC gc) {
 	EB_Resource *current;
 	EB_Resource *drawable = (EB_Resource *)d;
 	EB_HPS *ebhps = NULL;
+	BOOL createnew = TRUE;
 
 	if(drawable->restype == EBWINDOW)
 		current = drawable->ebwindow->hpscache;
 	else
 		current = drawable->ebpixmap->hpscache;
 	if(current)
-		while((current = current->next)) {
+		while((current = current->next))
 			if(current->procres == procres) {
 				EB_Resource *current2 = getResource(EBHPS1, (XID)current);
 				ebhps = current2->ebhps;
-				if(drawable->restype == EBWINDOW) {
-					int height = getDrawableHeight(d);
-					GpiEnableYInversion(ebhps->hps, height - 1);
-				} else
-					if(ebhps != drawable->ebpixmap->lastone)
-						GpiSetBitmapBits(ebhps->hps, 0, drawable->ebpixmap->pbmih->cy, drawable->ebpixmap->data, (PBITMAPINFO2)drawable->ebpixmap->pbmih);
-
-				if(gc)
-					setGCValues(ebhps, &gc->values, d, False);
-				else
-					setGCValues(ebhps, &stdgcvalues, d, False);
-				return ebhps;
+				createnew = FALSE;
+				break;
 			}
-		}
-	ebhps = newCachedHPS(procres, d);
+	if(createnew)
+		ebhps = newCachedHPS(procres, d);
+	GpiEnableYInversion(ebhps->hps, getDrawableHeight(d) - 1);
+	if(drawable->restype == EBPIXMAP && (createnew || ebhps != drawable->ebpixmap->lastone))
+		GpiSetBitmapBits(ebhps->hps, 0, drawable->ebpixmap->pbmih->cy, drawable->ebpixmap->data, (PBITMAPINFO2)drawable->ebpixmap->pbmih);
 	if(gc)
-		setGCValues(ebhps, &gc->values, d, True);
+		setGCValues(ebhps, &gc->values, d, createnew);
 	else
-		setGCValues(ebhps, &stdgcvalues, d, True);
+		setGCValues(ebhps, &stdgcvalues, d, createnew);
 	return ebhps;
 }
 
