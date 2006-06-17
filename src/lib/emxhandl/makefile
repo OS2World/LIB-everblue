@@ -18,7 +18,7 @@ MT=1
 LXLITE=1
 
 # for EMX compiler, -Zso requires -Zsys (not compatible with Innotek gcc)
-L_FAGS_USER=-Zsys
+L_FAGS_USER=-Zcrtdll
 
 # include configuration
 BASEDIR=../../..
