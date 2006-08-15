@@ -88,6 +88,6 @@ endif
 
 clean:
 	@echo About to cleanup the target directories ...
-	-@for %a in ($(DIRSTOCLEAN)) do @(echo - %a & del %a\* /N $(TO_NUL) & rd %a $(TO_NUL))
+	-@for %a in ($(DIRSTOCLEAN)) do @(echo - %a & call kd %a)
 	@echo Done.
 
