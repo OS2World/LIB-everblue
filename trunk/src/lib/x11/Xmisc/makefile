@@ -42,6 +42,7 @@ LXLITE=1
 CDEFS=-D__UNIXOS2__
 XDEFS=-DXTHREADS -DX_LOCALE # -DXKB
 C_FLAGS_USER=$(CDEFS) $(XDEFS)
+CLIB_FLAGS_USER=-p128
 
 # include configuration
 BASEDIR=../../../..
@@ -74,9 +75,10 @@ clean:
 # cannot use inference rule of rules.in here, as the long depedency list will blow up gmake
 
 $(TARGET): $(OBJS) $(OBJS1) $(OBJS2) $(OBJS3) 
-	@for %a in ($(OBJS))  do @(echo $(CLIB) r $(BINDIR_BS)\$@ $(OBJDIR_BS)\%a & $(CLIB) r $(BINDIR_BS)\$@ $(OBJDIR_BS)\%a)
-	@for %a in ($(OBJS1)) do @(echo $(CLIB) r $(BINDIR_BS)\$@ $(OBJDIR_BS)\%a & $(CLIB) r $(BINDIR_BS)\$@ $(OBJDIR_BS)\%a)
-	@for %a in ($(OBJS2)) do @(echo $(CLIB) r $(BINDIR_BS)\$@ $(OBJDIR_BS)\%a & $(CLIB) r $(BINDIR_BS)\$@ $(OBJDIR_BS)\%a)
-	@for %a in ($(OBJS3)) do @(echo $(CLIB) r $(BINDIR_BS)\$@ $(OBJDIR_BS)\%a & $(CLIB) r $(BINDIR_BS)\$@ $(OBJDIR_BS)\%a)
+
+	@for %a in ($(OBJS))  do @(echo $(CLIB) $(CLIB_FLAGS_MAIN) rc $(BINDIR_BS)\$@ $(OBJDIR_BS)\%a & $(CLIB) $(CLIB_FLAGS_MAIN) rc $(BINDIR_BS)\$@ $(OBJDIR_BS)\%a)
+	@for %a in ($(OBJS1)) do @(echo $(CLIB) $(CLIB_FLAGS_MAIN) rc $(BINDIR_BS)\$@ $(OBJDIR_BS)\%a & $(CLIB) $(CLIB_FLAGS_MAIN) rc $(BINDIR_BS)\$@ $(OBJDIR_BS)\%a)
+	@for %a in ($(OBJS2)) do @(echo $(CLIB) $(CLIB_FLAGS_MAIN) rc $(BINDIR_BS)\$@ $(OBJDIR_BS)\%a & $(CLIB) $(CLIB_FLAGS_MAIN) rc $(BINDIR_BS)\$@ $(OBJDIR_BS)\%a)
+	@for %a in ($(OBJS3)) do @(echo $(CLIB) $(CLIB_FLAGS_MAIN) rc $(BINDIR_BS)\$@ $(OBJDIR_BS)\%a & $(CLIB) $(CLIB_FLAGS_MAIN) rc $(BINDIR_BS)\$@ $(OBJDIR_BS)\%a)
 	@if exist  $(BINDIR_BS)\$*.bak del $(BINDIR_BS)\$*.bak
 
