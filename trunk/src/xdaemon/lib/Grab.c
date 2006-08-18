@@ -1,5 +1,7 @@
 #include "daemondll.h"
 
+// TODO InputOnly
+
 #define hookart HK_INPUT
 
 #define CLIENTHWND(wnd) WinWindowFromID(FID_CLIENT, wnd)

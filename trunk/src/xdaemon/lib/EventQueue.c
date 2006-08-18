@@ -1,5 +1,7 @@
 #include "daemondll.h"
 
+// TODO InputOnly
+
 XEvent *Daemon_copyEvent(register _XQEvent **newq, _XQEvent *origq);
 
 int serial = 0;

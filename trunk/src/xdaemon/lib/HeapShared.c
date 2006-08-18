@@ -3,7 +3,7 @@
  *
  * Initially commit 16 kb, add more when required
  *
- * NOTE: Hardcoded limit of 512 KB (increase when required)
+ * NOTE: Hardcoded limit of 50 MB (increase when required)
  *
  * TODO: Not process/thread safe (initializing/destroying heap)
  * 

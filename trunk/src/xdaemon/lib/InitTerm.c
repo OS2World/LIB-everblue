@@ -26,4 +26,3 @@ unsigned long _DLL_InitTerm(unsigned long mod_handle, unsigned long flag) {
 	}
 	return fSuccess;
 }
-
