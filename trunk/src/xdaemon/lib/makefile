@@ -10,7 +10,7 @@ EXE=$(STEM).dll
 RES=$(STEM).res
 OBJS=$(STEM).obj Drawable.obj EventMask.obj EventQueue.obj GC.obj Grab.obj \
 HeapShared.obj InitTerm.obj message.obj register.obj Resource.obj \
-stubs.obj Thread.obj Window.obj WindowHash.obj WindowTools.obj
+stubs.obj Thread.obj Window.obj WindowHash.obj WindowTools.obj Pointer.obj
 
 OBJDIR=xdaemon_dll
 CLEANUP= $(addprefix $(BINDIR_BS)\,$(EXE)) \
