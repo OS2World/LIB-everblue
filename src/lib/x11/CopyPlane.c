@@ -1,5 +1,15 @@
 #include "X11.h"
 
+// this module provides a function to copy a plane of a drawable to another drawable
+// XCopyPlane
+
+// see xlib.pdf 8.2
+
+// TODO: handle invisible source areas
+//       do all attributes
+//       determine Expose result
+
+
 #define X_CopyArea 62    
 extern USHORT GXtoROPMode[16];
 

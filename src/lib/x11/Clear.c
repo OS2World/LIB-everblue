@@ -1,5 +1,14 @@
 #include "X11.h"
 
+// this module provides functions for clearing whole windows or areas in them
+// XClearWindow, XClearArea
+
+// see xlib.pdf 8.1
+
+// TODO: use GpiBox instead of WinFillRect?
+//       fill with window background instead of simply erasing
+
+
 int XClearWindow(Display* display, Window w) {
 	DBUG_ENTER("XClearWindow")
 	EB_HPS *ebhps = getCachedHPS(process, w, NULL);

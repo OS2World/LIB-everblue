@@ -1,5 +1,7 @@
 #include "X11.h"
 
+// TODO InputOnly
+
 int Xlib_State(int hint) {
 	int state = 0;
 

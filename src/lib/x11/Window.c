@@ -1,5 +1,7 @@
 #include "X11.h"
 
+// TODO InputOnly
+
 Status XGetGeometry(register Display *dpy, Drawable d, Window *root, int *x,
 		int *y, unsigned int *width, unsigned int *height,
 		unsigned int *borderWidth, unsigned int *depth) {

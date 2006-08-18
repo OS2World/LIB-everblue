@@ -1,5 +1,7 @@
 #include "X11.h"
 
+// TODO borders can be read with this function
+
 extern int _XSetImage(XImage *srcimg, register XImage *dstimg, register int x, register int y);
 
 #define ROUNDUP(nbytes, pad) (((((nbytes) - 1) + (pad)) / (pad)) * (pad))
