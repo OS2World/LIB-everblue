@@ -88,9 +88,9 @@ int XDestroySubwindows(Display *display, Window window)
 		DBUG_RETURN(0);
 
 	while((child = WinQueryWindow(WinGetNextWindow(henum), QW_TOP))) {
-		Window w = (EB_Resource *)getWindow(child, TRUE, NULL);
+		Window w = getWindow(child, TRUE, NULL);
 		XDestroySubwindows(display, w);
-		Daemon_exec(process, UM_DESTROYWINDOW, w);
+		Daemon_exec(process, UM_DESTROYWINDOW, (EB_Resource *)w);
 	}
 
 	WinEndEnumWindows(henum);
