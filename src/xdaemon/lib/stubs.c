@@ -1,5 +1,7 @@
 #include "daemondll.h"
 
+// TODO InputOnly
+
 int auto_repeat = 0;
 int _XmaxKeyCode, _XminKeyCode;
 

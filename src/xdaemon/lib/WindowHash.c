@@ -22,6 +22,9 @@ EXPENTRY Window getWindow(HWND hwnd, BOOL create, EB_Window *newebw) {
 	}
 	if(!create)
 		return NULL;
+
+// must be desktop, foreign child of desktop, XPMInput or XPMChild!
+
 	if(!newebw)
 		newebw = scalloc(1, sizeof(EB_Window));
 	newebw->hwnd = hwnd;
