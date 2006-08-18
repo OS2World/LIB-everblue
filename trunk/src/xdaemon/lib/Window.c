@@ -43,21 +43,3 @@ EXPENTRY Window Daemon_RootWindow() {
 
 	return root_window;
 }
-
-/*EXPENTRY EB_Window *Daemon_getWindowFromHWnd(HWND hwnd) {
-	HAB hab;
-
-	if(hwnd == HWND_DESKTOP)
-		return root_window;
-	if(!hwnd)
-		return 0;
-	Daemon_getPMHandle(&hab);
-	if(WinIsWindow(hab, hwnd)) {
-		char winclass[32];
-
-		winclass[WinQueryClassName(hwnd, sizeof(winclass), winclass)] = 0;
-		if(strcmp(winclass,"XPMChild") == 0)
-			return WinQueryWindowPtr(hwnd, QWP_WINDOW);
-	}
-	return 0;
-}*/
