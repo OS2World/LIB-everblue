@@ -8,7 +8,7 @@ DEF=$(STEM).def
 EXE=$(STEM).exe
 OBJS=$(STEM).obj InitializePM.obj PMWM.obj \
 ProcBorder.obj ProcFrame.obj ProcHookmsg.obj ProcMessage.obj ProcWindow.obj \
-ShutDownPM.obj \
+ShutDownPM.obj CalcDelta.obj ProcInput.obj CursorMovement.obj \
 UMCreatePointer.obj UMCreateWindow.obj UMDestroyWindow.obj UMFreeResources.obj \
 UMMapWindow.obj UMOpenPipe.obj UMSetWindowPos.obj
 

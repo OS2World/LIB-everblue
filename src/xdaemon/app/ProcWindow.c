@@ -1,5 +1,9 @@
 #include "x11daemon.h"
 
+// TODO InputOnly
+
+// TODO cannot handle StaticGravity (bit_gravity and win_gravity!) in WM_SIZE
+
 MRESULT EXPENTRY xpmwndproc(HWND hWnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 	EbGetHookAccess();
 
@@ -23,74 +27,36 @@ MRESULT EXPENTRY xpmwndproc(HWND hWnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 		break;
 	}
 	case WM_SIZE: {
-		POINTL delta;
+		POINTL delta, stddelta;
 		HENUM children;
-		HWND borderwin, childborderwin, winparent;
-		SWP border, childborder, swp, parent;
+		HWND borderwin, childborderwin;
+		SWP childborder, swp;
 
 		borderwin = WinQueryWindow(hWnd, QW_PARENT);
 		WinQueryWindowPos(hWnd, &swp);
 
-		winparent = WinQueryWindow(borderwin, QW_PARENT);
-		WinQueryWindowPos(borderwin, &border);
-		WinQueryWindowPos(winparent, &parent);
+		stddelta.x = CalcXDelta(SHORT1FROMMP(mp1), SHORT1FROMMP(mp2), ebw->bit_gravity);
+		stddelta.y = CalcYDelta(SHORT2FROMMP(mp1), SHORT2FROMMP(mp2), ebw->bit_gravity);
 
-		delta.x = SHORT1FROMMP(mp2) - SHORT1FROMMP(mp1);
-		if(delta.x & 0x8000)
-			delta.x |= 0xffff0000;
-		else
-			delta.x &= 0xffff;
-		delta.y = SHORT2FROMMP(mp2) - SHORT2FROMMP(mp1);
-		if(delta.y & 0x8000)
-			delta.y |= 0xffff0000;
-		else
-			delta.y &= 0xffff;
-fprintf(logfile, "deltag: %x <- %x x %x <- %x => %x x %x\n", SHORT1FROMMP(mp2), SHORT1FROMMP(mp1), SHORT2FROMMP(mp2), SHORT2FROMMP(mp1), delta.x, delta.y);
-fflush(logfile);
 		children = WinBeginEnumWindows(hWnd);
 		while((childborderwin = WinGetNextWindow(children))) {
 			HWND child = WinQueryWindow(childborderwin, QW_TOP);
 			Window childres = getWindow(child, FALSE, NULL);
 			EB_Window *ebwchild = getResource(EBWINDOW, childres);
-			SWP swp2;
-			int change = 0;
-			int mydeltax = 0;
-			int mydeltay = 0;
 
-			if(!ebwchild)
+			if(!ebwchild || ebwchild->win_gravity == StaticGravity)
 				continue;
-			WinQueryWindowPos(child, &swp2);
-			WinQueryWindowPos(childborderwin, &childborder);
-			switch (ebwchild->win_gravity) {
-			case ForgetGravity:
-				WinShowWindow(child, FALSE);
-				continue;
-			case NorthWestGravity:
-			case NorthGravity:
-			case NorthEastGravity:
-			case StaticGravity:
-				mydeltay += delta.y / 2;
-			case WestGravity:
-			case CenterGravity:
-			case EastGravity:
-				mydeltay += delta.y - (delta.y / 2);
-				change++;
-			}
-			switch (ebwchild->win_gravity) {
-			case NorthEastGravity:
-			case EastGravity:
-			case SouthEastGravity:
-				mydeltax += delta.x / 2;
-			case NorthGravity:
-			case CenterGravity:
-			case SouthGravity:
-				mydeltax += delta.x - (delta.x / 2);
-				change++;
-			}
-fprintf(logfile, "delta: %x, %x -> %x, %x (%x -> %x)\n", delta.x, delta.y, mydeltax, mydeltay, childborder.y, childborder.y + mydeltay);
-fflush(logfile);
-			if(change)
+
+			int mydeltax = CalcXDelta(SHORT1FROMMP(mp1), SHORT1FROMMP(mp2), ebwchild->win_gravity) - stddelta.x;
+			int mydeltay = CalcYDelta(SHORT2FROMMP(mp1), SHORT2FROMMP(mp2), ebwchild->win_gravity) - stddelta.y;
+
+			if(mydeltax || mydeltay) {
+				WinQueryWindowPos(childborderwin, &childborder);
 				WinSetWindowPos(childborderwin, 0, childborder.x + mydeltax, childborder.y + mydeltay, 0, 0, SWP_MOVE | SWP_NOREDRAW);
+			}
+
+			if(ebwchild->win_gravity == UnmapGravity)
+				WinShowWindow(child, FALSE);
 		}
 		WinEndEnumWindows(children);
 		break;

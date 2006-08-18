@@ -17,8 +17,10 @@
 #define WM_POINTERENTER 0x041e
 #define WM_POINTERLEAVE 0x041f
 
+#define FID_FRAME								0x0001
 #define FID_BORDER                              0x8009
 #define FID_OBJECT                              0x800A
+#define FID_INPUT								0x800B
 #define PMXLIB_DEFAULT_ICON     0x2000
 
 EXPENTRY XEvent *Daemon_createEvent(register _XQEvent **newq, Window w, int type);
@@ -67,9 +69,12 @@ MRESULT EXPENTRY xpmwndproc(HWND hWnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY brdrwndproc(HWND hWnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY pmhwndproc(HWND hWnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY framewndproc(HWND hWnd, ULONG msg, MPARAM mp1, MPARAM mp2);
+MRESULT EXPENTRY inputwndproc(HWND hWnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 VOID APIENTRY Xlib_ExitHandler(ULONG ulTerm);
 int Xlib_PMWM_Handler0(HWND* hWnd, ULONG* msg, MPARAM* mp1, MPARAM* mp2);
 int Xlib_PMWM_Handler1(HWND* hWnd, ULONG* msg, MPARAM* mp1, MPARAM* mp2);
+int CalcXDelta(int oldsize, int newsize, int gravity);
+int CalcYDelta(int oldsize, int newsize, int gravity);
 void initializePM();
 void shutDownPM();
 void closeHandles(HPIPE pipe, HEV event);

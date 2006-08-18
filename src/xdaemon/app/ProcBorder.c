@@ -1,5 +1,7 @@
 #include "x11daemon.h"
 
+// TODO InputOnly
+
 MRESULT EXPENTRY brdrwndproc(HWND hWnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 	EbGetHookAccess();
 	fprintf(logfile, "Processing border event: %x\n", (int)msg);

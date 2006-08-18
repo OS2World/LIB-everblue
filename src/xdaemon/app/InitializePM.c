@@ -41,6 +41,8 @@ void initializePM() {
 	WinGetLastError(pmctls_hab); // PMERR_ATOM_NAME_NOT_FOUND???
 	WinRegisterClass(pmctls_hab, "XPMBorder", brdrwndproc, CS_MOVENOTIFY, 0);
 	WinGetLastError(pmctls_hab); // PMERR_ATOM_NAME_NOT_FOUND???
+	WinRegisterClass(pmctls_hab, "XPMInput", inputwndproc, CS_MOVENOTIFY, 0);
+	WinGetLastError(pmctls_hab); // PMERR_ATOM_NAME_NOT_FOUND???
 	mainhwnd = WinCreateWindow(HWND_OBJECT, "ObjClass", "Everblue Daemon",
 			0, 0, 0, 0, 0, NULLHANDLE, HWND_TOP, FID_OBJECT, NULL, NULL);
 	if (mainhwnd == NULLHANDLE) {
