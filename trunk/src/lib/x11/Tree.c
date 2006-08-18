@@ -1,5 +1,8 @@
 #include "X11.h"
 
+// TODO InputOnly
+
+#define FID_FRAME 0x0001
 #define FID_BORDER 0x8009
 
 Status XQueryTree (register Display *dpy, Window w, Window *root, Window *parent, Window **children, unsigned int *nchildren) {
@@ -20,7 +23,7 @@ Status XQueryTree (register Display *dpy, Window w, Window *root, Window *parent
 
 		if(ebw->hwnd == HWND_DESKTOP)
 			while((current = WinGetNextWindow(henum))) {
-				if((WinQueryWindowUShort(current, QWS_ID) == FI_FRAME ||
+				if((WinQueryWindowUShort(current, QWS_ID) == FID_FRAME ||
 						WinQueryWindowUShort(current, QWS_ID) == FID_BORDER) &&
 						(client = WinWindowFromID(current, FID_CLIENT))) {
 					char winclass[32];

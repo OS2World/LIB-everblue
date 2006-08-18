@@ -124,7 +124,7 @@ Display *newdisplay() {
 	vp->visualid = 1;
 	vp->class = TrueColor;
 	vp->bits_per_rgb = 8;
-	vp->map_entries	= 16;
+	vp->map_entries	= 256;
 	vp->red_mask	= 0xff0000;
 	vp->green_mask	= 0x00ff00;
 	vp->blue_mask	= 0x0000ff;

@@ -381,7 +381,7 @@ KeySym *XGetKeyboardMapping(Display* display, unsigned int first_keycode,
 	count = keycode_count * KEYSYM_PER_CODE;
 	size = count + 1;
 
-	if (!(dst = (KeySym *)calloc( size, sizeof(KeySym) ))) {
+	if (!(dst = (KeySym *)Xcalloc( size, sizeof(KeySym) ))) {
 		goto finish;
 	}
 	map = dst;

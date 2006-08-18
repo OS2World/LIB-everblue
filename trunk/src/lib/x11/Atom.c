@@ -1,5 +1,18 @@
 #include "X11.h"
 
+// this module provides functions for translating a String to an Atom (= int)
+// XGetAtomName, XGetAtomNames, XInternAtom, XInternAtoms
+
+// see include/XAtom.h
+// see XServer/dix/initatoms.c
+// see XServer/dix/BuiltInAtoms
+// see xlib.pdf 4.3
+
+// TODO: move to xdaemon (and with it add locking)
+//       (atoms should be defined system-wide)
+// Optionally: preinitialize AtomTbl at compile time
+
+
 static char *AtomTbl[1024] = {"", NULL};
 static int LastAtom = 1;
 static char AtomBuf[65536], *AtomTail = AtomBuf;
@@ -26,28 +39,19 @@ char* atmNames[XA_LAST_PREDEFINED + 1] = { NULL,
 
 char** atomNames = (char **)&atmNames;
 
-Atom (*Xlib_XInternAtom)(char*, Bool) = NULL;
-char *(*Xlib_GetAtomName)(Atom) = NULL;
-
-char *XGetAtomName(Display *dpy, Atom atom)
-{
+char *XGetAtomName(Display *dpy, Atom atom) {
 	DBUG_ENTER("XGetAtomName")
-	char *name = NULL, *entry = NULL;
-	if (Xlib_GetAtomName)
-		entry = Xlib_GetAtomName(atom);
-	else 
-	if (atom > 0 && atom <= XA_LAST_PREDEFINED)
-		entry = atomNames[atom];
-	if (entry) 
-		name = Xstrdup(entry);
+	char *name = NULL;
+
+	if(atom > 0 && atom <= LastAtom)
+		name = Xstrdup(AtomTbl[atom]);
 	DBUG_RETURN(name);
 }
 
-Status XGetAtomNames(Display* dpy, Atom* atoms, int count, char** names_return)
-{
+Status XGetAtomNames(Display* dpy, Atom* atoms, int count, char** names_return) {
 	DBUG_ENTER("XGetAtomNames")
-	while (atoms && count && names_return) {
-		*names_return = XGetAtomName(dpy,*atoms);
+	while(atoms && count && names_return) {
+		*names_return = XGetAtomName(dpy, *atoms);
 		count--; atoms++; names_return++;
 	}
 	DBUG_RETURN(True);
@@ -56,6 +60,7 @@ Status XGetAtomNames(Display* dpy, Atom* atoms, int count, char** names_return)
 Atom XInternAtom(Display* dpy, _Xconst char* atom_name, Bool only_if_exists) {
 	char **tbl = AtomTbl;
 	int i = 0;
+
 	if(atom_name) {
 		while(i < LastAtom) {
 			if(!strcmp(*tbl, atom_name)) {
@@ -69,13 +74,12 @@ Atom XInternAtom(Display* dpy, _Xconst char* atom_name, Bool only_if_exists) {
 			return (Atom)i;
 		}
 	}
-	return (Atom)0;
+	return (Atom)None;
 }
 
-Status XInternAtoms(Display* dpy, char** names, int count, Bool onlyIfExists, Atom* atoms_return)
-{
+Status XInternAtoms(Display* dpy, char** names, int count, Bool onlyIfExists, Atom* atoms_return) {
 	DBUG_ENTER("XInternAtoms")
-	while (names && count) {
+	while(names && count) {
 		Atom atom;
 		atom = XInternAtom(dpy, *names, onlyIfExists);
 		if(atoms_return)
@@ -86,12 +90,12 @@ Status XInternAtoms(Display* dpy, char** names, int count, Bool onlyIfExists, At
 	DBUG_RETURN(True);
 }
 
-void Xlib_InitAtoms(Display* dpy)
-{
+void Xlib_InitAtoms(Display* dpy) {
 	DBUG_ENTER("Xlib_InitAtoms")
 	Atom i;
+
 	for(i = 1; i <= XA_LAST_PREDEFINED; i++) {
-		if (XInternAtom(dpy, atmNames[i], FALSE) == i)
+		if(XInternAtom(dpy, atmNames[i], FALSE) == i)
 			continue;
 		fprintf(stderr,"Error initialising atoms!");
 		abort();
