@@ -1,5 +1,9 @@
 #include "daemondll.h"
 
+// TODO InputOnly
+
+#define FID_FRAME								0x0001
+
 EXPENTRY HWND getParent(HWND child) {
 	if(child == HWND_DESKTOP)
 		return NULL;
@@ -36,7 +40,7 @@ EXPENTRY HWND getValidWindow(HWND child) {
 			else
 				return HWND_DESKTOP;
 		parent = WinQueryWindow(iterator, QW_PARENT);
-		if(WinQueryWindowUShort(iterator, QWS_ID) == FI_FRAME && parent == realdesktop) {
+		if(WinQueryWindowUShort(iterator, QWS_ID) == FID_FRAME && parent == realdesktop) {
 			HWND client = WinWindowFromID(iterator, FID_CLIENT);
 			WinQueryClassName(client, sizeof(winclass), winclass);
 			if(!strcmp(winclass, "XPMChild"))
