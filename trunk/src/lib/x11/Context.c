@@ -1,3 +1,14 @@
+#include "X11.h"
+
+// this module provides functions for freely associating data to IDs
+// XSaveContext, XFindContext, XDeleteContext
+
+// see lib/x11/Context.c
+// see xlib.pdf 16.10
+
+// TODO: use original file and move to Xmisc
+
+
 /* This module implements a simple sparse array.
 
    XSaveContext(a,b,c,d) will store d in position (a,b,c) of the array.
@@ -9,8 +20,6 @@
    to be most efficient with very few (one or two) different a's.
 
 */
-
-#include "X11.h"
 
 #define INITHASHMASK 63 /* Number of entries originally in the hash table. */
 

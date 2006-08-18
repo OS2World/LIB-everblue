@@ -1,5 +1,7 @@
 #include "X11.h"
 
+// TODO InputOnly
+
 int XMapWindow(Display* display, Window w) {
 	DBUG_ENTER("XMapWindow")
 	int ret = (int)Daemon_exec(process, UM_MAPWINDOW, (void *)w);

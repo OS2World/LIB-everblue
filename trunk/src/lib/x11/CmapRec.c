@@ -1,6 +1,15 @@
 #include "X11.h"
 #include "Xcms/Xcmsint.h"
 
+// this module provides functions for managing records for colormaps
+// XcmsCCCOfColormap, XcmsSetCCCOfColormap
+
+// see lib/x11/cmsCmap.c
+// see xlib.pdf 6.8.1
+
+// Attention: CmapRecForColormap depends on fact that there is only one valid visual
+
+
 /*
  *      FORWARD DECLARATIONS
  */

@@ -1,10 +1,21 @@
 #include "X11.h"
 
+// this module provides functions for handling colormaps and their entries
+// XSetWindowColormap
+// XCreateColormap, XFreeColormap, XCopyColormapAndFree
+// XQueryColor, XQueryColors, XStoreColor, XStoreColors, XAllocColor
+// XInstallColormap, XUninstallColormap, XListInstalledColormaps
+
+// see xlib.pdf 3.9, 6.4, 6.6, 6.7, 9.3
+
+// TODO: support more than one colormap
+
+
 Status XQueryColor(register Display *dpy, Colormap cmap, XColor *def) {
 	DBUG_ENTER("XQueryColor")
 	def->red = (def->pixel >> 8) & 0xff00;
-	def->blue = (def->pixel << 8) & 0xff00;
 	def->green = def->pixel & 0xff00;;
+	def->blue = (def->pixel << 8) & 0xff00;
 	def->flags = DoRed | DoGreen | DoBlue;
 	DBUG_RETURN(1);
 }

@@ -1,5 +1,16 @@
 #include "X11.h"
 
+// this module provides a function to copy an area between drawables
+// XCopyArea
+
+// see xlib.pdf 8.2
+
+// TODO: handle invisible source areas
+//       do all attributes
+//       determine Expose result
+// Optionally: optimize algorithm
+
+
 #define X_CopyArea 62    
 
 USHORT GXtoROPMode[16]	= {
