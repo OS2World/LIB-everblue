@@ -76,6 +76,7 @@ MRESULT EXPENTRY pmhwndproc(HWND hWnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 								 swp.x + SHORT1FROMMP(mp2) - 32768, swp.y + SHORT2FROMMP(mp2) - 32768, 0, 0, SWP_MOVE | SWP_NOREDRAW);
 		}
 		break;
+#if 0
 	case UM_REPARENTWINDOW:
 		{
 			UM_ReparentWindow *args = PVOIDFROMMP(mp1);
@@ -87,6 +88,7 @@ MRESULT EXPENTRY pmhwndproc(HWND hWnd, ULONG msg, MPARAM mp1, MPARAM mp2) {
 			}
 			break;
 		}
+#endif
 	case UM_CREATEEVENT: {
 			UM_CreateEvent *EventParams = (UM_CreateEvent *)PVOIDFROMMP(mp1);
 			Daemon_addEvent(EventParams->event, EventParams->procres, False);

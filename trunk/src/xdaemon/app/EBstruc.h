@@ -44,10 +44,11 @@ typedef struct UserData {
 
 typedef struct {
 	HWND hwnd;
-	Bool xpmchild;
+	Bool xpm;
 	struct EB_Resource *hpscache; // EBHPS1
     int border_width;
     int class;
+	Bool mapped;
     int bit_gravity;
     int win_gravity;
     int backing_store;

@@ -1,5 +1,7 @@
 #include "x11daemon.h"
 
+// TODO InputOnly
+
 Bool um_destroyWindow(EB_Resource *windowres) {
 	EB_Window *ebw = getResource(EBWINDOW, (XID)windowres);
 

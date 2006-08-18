@@ -1,5 +1,7 @@
 #include "x11daemon.h"
 
+// TODO InputOnly
+
 int positionWindow(HWND hwnd, HWND position, ULONG flags) {
 	char winclass[32];
 	HWND parenthwnd = WinQueryWindow(hwnd, QW_PARENT);

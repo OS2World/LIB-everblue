@@ -1,5 +1,7 @@
 #include "x11daemon.h"
 
+// TODO InputOnly
+
 extern int _XminKeyCode, _XmaxKeyCode;
 
 void hook_msg(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2, ULONG time, POINTL ptl) {

@@ -1,5 +1,7 @@
 #include "x11daemon.h"
 
+// TODO InputOnly
+
 // have to create frame window manually
 // to get proper WM_SHOW messages
 
@@ -7,6 +9,8 @@ Window um_createWindow(UM_CreateWindow *args) {
 	HPOINTER tmpicon = 0;
 	HMODULE xmod = 0;
 	ULONG flStyle = 0;
+	ULONG id;
+	PVOID pCtlData;
 	PSZ pszTitle = "Xlib/PM";
 	HWND hwndClient, hwndBorder;
 	EB_Window *parent = getResource(EBWINDOW, args->parent);
@@ -35,12 +39,21 @@ fflush(logfile);
 	if(!args->newwind->override_redirect)
 		framectl.flCreateFlags |= FCF_TASKLIST | FCF_BORDER | FCF_NOBYTEALIGN;
 
-	if(decorated) {
+	if(args->newwind->class == InputOnly) {
+		pszClass = "XPMInput";
+		titlebar = 0;
+		id = FID_INPUT;
+		pCtlData = args->newwind;
+	} else if(decorated) {
 		pszClass = WC_FRAME;
 		titlebar = WinQuerySysValue(HWND_DESKTOP, SV_CYTITLEBAR);
+		id = FID_FRAME;
+		pCtlData = &framectl;
 	} else {
 		pszClass = "XPMBorder";
 		titlebar = 0;
+		id = FID_BORDER;
+		pCtlData = NULL;
 	}
 
 	WinQueryWindowPos(parent->hwnd, &parentpos);
@@ -49,9 +62,7 @@ fprintf(logfile, "create with size: %x (%x), position: %x\n", args->height + 2 *
 fprintf(logfile, "position calc: %x - %x - %x - %x - %x\n", parentpos.cy, args->height, args->newwind->border_width, args->y, titlebar);
 fflush(logfile);
 	hwndBorder = WinCreateWindow(parent->hwnd, pszClass, pszTitle, flStyle,
-			0, 0, 0, 0,
-			NULLHANDLE, HWND_TOP, (pszClass == WC_FRAME ? FI_FRAME : FID_BORDER),
-			(pszClass == WC_FRAME ? &framectl : NULL), &presmain);
+			0, 0, 0, 0, NULLHANDLE, HWND_TOP, id, pCtlData, &presmain);
 	if(decorated) {
 		if(!args->newwind->border_width)
 			args->newwind->border_width = 1;
@@ -66,16 +77,20 @@ fflush(logfile);
 			parentpos.cy - args->height - args->newwind->border_width - args->y - titlebar,
 			args->width + 2 * args->newwind->border_width,
 			args->height + 2 * args->newwind->border_width + titlebar, SWP_SIZE | SWP_MOVE);
-	hwndClient = WinCreateWindow(hwndBorder, "XPMChild", pszTitle,
-			flStyle | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-			args->newwind->border_width,
-			args->newwind->border_width,
-			args->width,
-			args->height,
-			NULLHANDLE,
-			HWND_TOP, FID_CLIENT, args->newwind, NULL);
 
-	windowres = getWindow(hwndClient, TRUE, NULL);
+	if(args->newwind->class == InputOnly)
+		windowres = getWindow(hwndBorder, TRUE, NULL);
+	else {
+		hwndClient = WinCreateWindow(hwndBorder, "XPMChild", pszTitle,
+				flStyle | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+				args->newwind->border_width,
+				args->newwind->border_width,
+				args->width,
+				args->height,
+				NULLHANDLE,
+				HWND_TOP, FID_CLIENT, args->newwind, NULL);
+		windowres = getWindow(hwndClient, TRUE, NULL);
+	}
 
 	addResource(&args->process->ebprocess->res, (EB_Resource *)windowres);
 	if(args->event_mask)

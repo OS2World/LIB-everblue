@@ -1,5 +1,7 @@
 #include "x11daemon.h"
 
+// TODO InputOnly
+
 Bool um_setWindowPos(UM_SetWindowPos *args) {
 	EB_Window *ebw = getResource(EBWINDOW, args->window);
 	HWND hwndborder = WinQueryWindow(ebw->hwnd, QW_PARENT);
