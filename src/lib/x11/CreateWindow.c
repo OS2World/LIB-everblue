@@ -11,7 +11,8 @@ Window XCreateWindow(Display *display, Window parent, int x, int y,
 
 fprintf(stderr, "Create: %ld, %ld, %ld, %ld (%x->)\n", x, y, width, height, parent);
 
-	ebw->xpmchild = True;
+	ebw->class = class;
+	ebw->xpm = True;
 	ebw->border_width = border_width;
 	ebw->bit_gravity = ForgetGravity;
 	ebw->win_gravity = NorthWestGravity;
@@ -81,15 +82,15 @@ int XDestroySubwindows(Display *display, Window window)
 	DBUG_ENTER("XDestroySubwindows")
 	EB_Window *ebw = getResource(EBWINDOW, window);
 	HENUM henum = WinBeginEnumWindows(ebw->hwnd);
-	HWND w;
+	HWND child;
 
 	if (!henum)
 		DBUG_RETURN(0);
 
-	while ((w = WinQueryWindow(WinGetNextWindow(henum), QW_TOP)))
-	{
+	while((child = WinQueryWindow(WinGetNextWindow(henum), QW_TOP))) {
+		Window w = (EB_Resource *)getWindow(child, TRUE, NULL);
 		XDestroySubwindows(display, w);
-		Daemon_exec(process, UM_DESTROYWINDOW, (EB_Resource *)getWindow(w, TRUE, NULL));
+		Daemon_exec(process, UM_DESTROYWINDOW, w);
 	}
 
 	WinEndEnumWindows(henum);

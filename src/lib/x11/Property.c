@@ -1,6 +1,7 @@
 #define XMD_H 1
 #include "X11.h"
 #include "Xatomtype.h"
+#define FID_FRAME 0x0001
 
 /* Functions for managing the user data lists that are associated with
  * a given window handle.  Used in dw_window_set_data() and
@@ -114,7 +115,7 @@ int XGetWindowProperty(Display* display, Window w, Atom property, long long_offs
 	*nitems_return = 0;
 
 	if(((tmpatm = XInternAtom(display, "__SWM_VROOT", True)) && tmpatm == property)) {
-		if(ebw->hwnd != HWND_DESKTOP && !ebw->xpmchild && WinQueryWindowUShort(ebw->hwnd, QWS_ID) == FI_FRAME) {
+		if(ebw->hwnd != HWND_DESKTOP && !ebw->xpm && WinQueryWindowUShort(ebw->hwnd, QWS_ID) == FID_FRAME) {
 			if(!WinWindowFromID(ebw->hwnd, 0x0056))
 				DBUG_RETURN(Success);
 			Window wps = getWindow(ebw->hwnd, TRUE, NULL);

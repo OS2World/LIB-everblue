@@ -1,5 +1,7 @@
 #include "X11.h"
 
+// TODO InputOnly
+
 HMODULE module = 0;
 
 int XDefineCursor(Display *display, Window w, Cursor cursor) {
@@ -12,7 +14,7 @@ int XDefineCursor(Display *display, Window w, Cursor cursor) {
 
 	EB_Window *ebw = getResource(EBWINDOW, w);
 
-	if(ebw->xpmchild) {
+	if(ebw->xpm) {
 		char winclass[32];
 		POINTL ptl;
 		HWND hwnd;
@@ -23,7 +25,7 @@ int XDefineCursor(Display *display, Window w, Cursor cursor) {
 		WinQueryPointerPos(HWND_DESKTOP, &ptl);
 		hwnd = WinWindowFromPoint(HWND_DESKTOP, &ptl, TRUE);
 		WinQueryClassName(hwnd, sizeof(winclass), winclass);
-		if(!strcmp(winclass, "XPMChild") || !strcmp(winclass, "XPMBorder"))
+		if(!strcmp(winclass, "XPMChild") || !strcmp(winclass, "XPMBorder") || !strcmp(winclass, "XPMInput"))
 			WinSendMsg(hwnd, UM_CHANGEPOINTER, 0, 0);
 	}
 	DBUG_RETURN(0);
