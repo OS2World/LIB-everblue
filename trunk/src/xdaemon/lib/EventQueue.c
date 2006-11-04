@@ -32,7 +32,7 @@ EXPENTRY void Daemon_addEvent(_XQEvent *newq, EB_Resource *procres, Bool copy) {
 	display->qlen++;
 	XUnlockDisplay(display);
 	FILE *logfile = fopen("logfile", "a");
-	fprintf(logfile, "putting event %x - copy: %x (%x)\n", newq->event.type, copy, display->qlen);
+	fprintf(logfile, "putting event %x (%x) - copy: %x (%x)\n", &newq->event, newq->event.type, copy, display->qlen);
 	fclose(logfile);
 	void *buffer = &newq->event;
 	write(process->pipeserver, (char *)&buffer, sizeof(void *));
