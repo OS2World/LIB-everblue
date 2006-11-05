@@ -1,0 +1,96 @@
+2 def files in lib x11
+=====================
+X11_exp.def for export library
+ - associates underscore symbols with ordinals
+    -> _XSaveContext @ 1
+
+X11.def for creating export entries in DLL exe header
+ - associates non-underscore smybols to underscore symbols with ordinals
+    -> XSaveContext = _XSaveContext @ 1
+
+  NOTE: ordinals taken from X11 implementation of xfree86 !!!
+
+==> DLL holds Non-Resident Name with non-underscore symbol and ordinal
+--> export library maps underscored symbols with ordinals,
+    linked exe holds ordinals only
+
+TODO:
+  create alternative export lib for EMX out of X11.def
+
+
+##################################################################################################
+
+Draft additions for project doc/overview
+
+====================================================================
+
+emxhandl.dll (macht Everblue kompatible zu EMX
+-----------------------------------------------
+wird auschliesslich von Everblue benutzt, damit XFree-Pogramme
+laufen k”nnen, die das EMX runtime benutzen
+
+  - EMXFree-Funktion (aufgerufen von X11.dll)
+    Fall 1: xmalloc von Everblue, xfree auch von everblue: alles ok
+    Fall 2: malloc  von gcc, xfree von everblue
+    Fall 3: malloc  von gcc, xfree von gcc
+
+  - EMXRegisterHandle(int handle)
+    wird von Everblue aufgerufen, damit EMX Runtime
+    Komponenten das handle mitverwenden k”nnen
+
+====================================================================================
+
+ebhook.dll (Hook zum PM [Window Manager]]
+--------------------------------------------------
+Wird von xdaemon.dll benutzt, geladen von X11.dll und xdeameon.exe
+DLL vermittelt Anforderungen an xdeamon.exe
+
+- hook_inputQueueHook, hook_sendMsgHook
+- Zugriff auf globalen Speicher
+  getWriteAccess, releaseWriteAccess, killBadProcess, forceWrite
+
+====================================================================================
+
+xdeamon.exe (bearbeitet alle Anforderungen von ebhook.dll)
+----------------------------------------------------------
+- owner aller Everblue-Fenster
+  - implementiert šbergabe von PM Fenstern von Prozess zu Prozess
+- fhrt alle Anforderungen vom Hook aus
+- fhrt UserMessages aus
+
+====================================================================================
+
+X11.dll - implementiert X11 lib
+-------------------------------
+
+X11.h inludiert myXlibint.h, das ist die original XlibInt.h
+- ohne nicht untersttzte Funktionen
+- mit Ersatzstrukturen, wenn Variablen in Strukturennicht
+  untersttzt werden (Umbenennung der Variablen, um Compilerfehler
+  zu generieren)
+
+leichte Žnderungen der Originale
+--------------------------------
+myImUtil.c
+myKeyBind.c
+myXrm.c
+
+Alle anderen Cs sind Everblue-eigen
+
+šbernommen von X11.org
+---------------------------
+xcms     - Colour management (XlibInt.h -> myXlibint.h)
+xlibi18n - int. toolkit      (XlibInt.h -> myXlibint.h)
+Xmisc    - verschiedenes     (XlibInt.h -> myXlibint.h)
+
+====================================================================================
+
+util\makekeys.exe
+-----------------
+makekeys < keysymdef.h > ks_tables.h
+
+Achtng: eb_make.cmd muss ggfs. mit EMX gebaut werden
+
+====================================================================================
+
+
